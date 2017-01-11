@@ -4,18 +4,18 @@ import numpy as np
 
 import sys
 pwd = getcwd()
-parent_path = path.abspath(path.join(pwd, pardir)) 
+parent_path = path.abspath(path.join(pwd, pardir))
 sys.path.insert(0, parent_path)
 import unittest
 import dfFunctions
 import tf_models
 import recommender as re
-
+from utils import accuracy
 
 
 class TestRecomendation(unittest.TestCase):
 
-     def test_accuracy(self):
+    def test_accuracy(self):
         """
         Test to check if the accuracy functions deals
         with arrays of different sizes and if it behaves
@@ -24,8 +24,8 @@ class TestRecomendation(unittest.TestCase):
         array1 = np.array([1,1,1,1])
         array2 = np.array([1,1,1,1,2])
         array3 = np.array([2,2,2,2])
-        self.assertRaises(accuracy(array1,array2))
-        self.assertTrue(accuracy(array2,array1) == 1)   
+        self.assertRaises(AssertionError, accuracy, array1, array2)
+        self.assertTrue(accuracy(array3,array1) == 1)
 
 
     def test_upperbound(self):
@@ -44,6 +44,7 @@ class TestRecomendation(unittest.TestCase):
         batch_size = 1000
         num_steps = 5000
 
+        print("\n")
         model.training(dimension,regularizer_constant,learning_rate,batch_size,num_steps)
         prediction = model.valid_prediction()
         self.assertTrue(prediction <=1.0, \
