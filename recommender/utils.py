@@ -10,4 +10,5 @@ def accuracy(predictions, ratings):
     :type ratings: numpy array
     :rtype: float
     """
+    assert len(predictions) == len(ratings)
     return np.sqrt(np.mean(np.power(predictions - ratings, 2)))

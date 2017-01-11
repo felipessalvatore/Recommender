@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from os import getcwd,path, pardir
+import numpy as np
 
 import sys
 pwd = getcwd()
@@ -13,12 +14,26 @@ import recommender as re
 
 
 class TestRecomendation(unittest.TestCase):
-    """
-    A very basic test to check if the otimization is working.
-    We run 5000 steps of training and check if the mean square error
-    from the valid dataset is less than 1
-    """
+
+     def test_accuracy(self):
+        """
+        Test to check if the accuracy functions deals
+        with arrays of different sizes and if it behaves
+        normally.
+        """
+        array1 = np.array([1,1,1,1])
+        array2 = np.array([1,1,1,1,2])
+        array3 = np.array([2,2,2,2])
+        self.assertRaises(accuracy(array1,array2))
+        self.assertTrue(accuracy(array2,array1) == 1)   
+
+
     def test_upperbound(self):
+        """
+        A very basic test to check if the otimization is working.
+        We run 5000 steps of training and check if the mean square error
+        from the valid dataset is less than 1
+        """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.get_data(path, sep="::")
         model = re.SVDmodel(df,'user', 'item','rate')
@@ -34,6 +49,8 @@ class TestRecomendation(unittest.TestCase):
         self.assertTrue(prediction <=1.0, \
                             "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
                             .format(num_steps,prediction))
+
+
 
 
 
