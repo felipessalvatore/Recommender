@@ -31,7 +31,7 @@ class TestRecomendation(unittest.TestCase):
 
     def test_get_data(self):
         """
-        Test to check the function get_data is working.
+        Test to check if the function get_data is working.
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.get_data(path, sep="::")
