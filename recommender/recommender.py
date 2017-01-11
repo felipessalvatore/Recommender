@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     model.training(dimension,regularizer_constant,learning_rate,batch_size,num_steps)
     prediction = model.valid_prediction()
-    print("The mean square error the whole valid dataset is ", prediction) 
+    print("The mean square error of the whole valid dataset is ", prediction) 
 
 
         
