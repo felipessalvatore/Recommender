@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
+from os import getcwd,path, pardir
 
+import sys
+pwd = getcwd()
+parent_path = path.abspath(path.join(pwd, pardir)) 
+sys.path.insert(0, parent_path)
 import unittest
 import dfFunctions
 import tf_models
 import recommender as re
-from os import getcwd,path, pardir
+
+
 
 class TestRecomendation(unittest.TestCase):
     """
@@ -13,8 +19,7 @@ class TestRecomendation(unittest.TestCase):
     from the valid dataset is less than 1
     """
     def test_upperbound(self):
-        pwd = getcwd()
-        path = path.abspath(path.join(pwd, pardir)) + '/movielens/ml-1m/ratings.dat'
+        path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.get_data(path, sep="::")
         model = re.SVDmodel(df,'user', 'item','rate')
 
