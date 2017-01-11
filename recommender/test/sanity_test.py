@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from os import getcwd,path, pardir
 import numpy as np
+import pandas as pd
 
 import sys
 pwd = getcwd()
@@ -26,6 +27,17 @@ class TestRecomendation(unittest.TestCase):
         array3 = np.array([2,2,2,2])
         self.assertRaises(AssertionError, accuracy, array1, array2)
         self.assertTrue(accuracy(array3,array1) == 1)
+
+
+    def test_get_data(self):
+        """
+        Test to check the function get_data is working.
+        """
+        path = parent_path + '/movielens/ml-1m/ratings.dat'
+        df = dfFunctions.get_data(path, sep="::")
+        self.assertTrue(type(df) == pd.core.frame.DataFrame)
+
+
 
 
     def test_upperbound(self):
