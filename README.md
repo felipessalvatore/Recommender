@@ -62,5 +62,5 @@ python3 recommender.py -s 20000
  
 >> The duration of the whole training with 20000 steps is 34.79
 seconds,which is equal to: 0:0:0:34 (DAYS:HOURS:MIN:SEC)
->> The mean square error the whole valid dataset is  0.867328
+>> The mean square error of the whole valid dataset is  0.867328
 ```
