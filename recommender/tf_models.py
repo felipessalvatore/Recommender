@@ -97,7 +97,6 @@ class SVD(object):
         self.num_steps = 0
         self.dimension = None
         self.regularizer = None
-        self.command = None
         self.best_acc_test = float('inf')
 
 
@@ -240,27 +239,9 @@ class SVD(object):
                 users, items, rates = self.valid_batch_generator.get_batch()
                 if show_valid:
                     feed_dict = {self.tf_user_batch: users, self.tf_item_batch: items, self.tf_rate_batch: rates}
-                    prediction = sess.run(self.infer, feed_dict=feed_dict)
-                    floor_prediction = np.floor(prediction)
-                    ceil_prediction = np.ceil(prediction)
-                    floor_error = accuracy(floor_prediction,rates)
-                    ceil_error = accuracy(ceil_prediction,rates)
-                    if floor_error <= ceil_error:
-                        valid_error = floor_error
-                        self.command = "floor"
-                    else:
-                        valid_error = ceil_error
-                        self.command = "ceil"
-
+                    valid_error = sess.run(self.acc_op, feed_dict=feed_dict)
                     return valid_error
                 else:
-                    feed_dict = {self.tf_user_batch: list_of_users, self.tf_item_batch: list_of_items, self.tf_rate_batch: rates}
+                    feed_dict = {self.tf_user_batch: list_of_users, self.tf_item_batch: list_of_items}
                     prediction = sess.run(self.infer, feed_dict=feed_dict)
-                    if self.command == None:
-                        return prediction
-                    elif self.command == "floor":
-                        prediction = np.floor(prediction)
-                        return prediction
-                    else:
-                        prediction = np.ceil(prediction)
-                        return prediction
+                    return prediction
