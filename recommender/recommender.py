@@ -49,7 +49,7 @@ class SVDmodel(object):
         return df_train, df_test,df_validation
 
 
-    def training(self,hp_dim,hp_reg,learning_rate,batch_size,num_steps):
+    def training(self,hp_dim,hp_reg,learning_rate,momentum_factor,batch_size,num_steps):
         """
         This method creates three batch generators: one for the train df,
         other for the test df, and another for the valid df (this last one will
@@ -61,6 +61,7 @@ class SVDmodel(object):
 
         :type hp_dim: int
         :type hp_reg: float
+        :type momentum_factor: float
         :type learning_rate: float
         :type batch_size: int
         :type num_steps: int
@@ -69,7 +70,7 @@ class SVDmodel(object):
         self.test_batches = dfFunctions.BatchGenerator(self.test,batch_size,self.users,self.items,self.ratings)
         self.valid_batches = dfFunctions.BatchGenerator(self.valid,len(self.valid),self.users,self.items,self.ratings)
         self.tf_counterpart = tf_models.SVD(self.num_of_users,self.num_of_items,self.train_batches,self.test_batches,self.valid_batches)
-        self.tf_counterpart.training(hp_dim,hp_reg,learning_rate,num_steps)
+        self.tf_counterpart.training(hp_dim,hp_reg,learning_rate,momentum_factor,num_steps)
         self.tf_counterpart.print_stats()
 
     def valid_prediction(self):
@@ -103,6 +104,8 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--batch",type=int, default=1000, help="batch size (default=1000)")
     parser.add_argument("-s", "--steps",type=int, default=5000, help="number of training (default=5000)")
     parser.add_argument("-p", "--path",type=str, default=path, help="ratings path (default=pwd/movielens/ml-1m/ratings.dat)")
+    parser.add_argument("-m", "--momentum",type=float, default=0.9, help="momentum factor (default=0.9)")
+    
     args = parser.parse_args()
 
     df = dfFunctions.get_data(args.path, sep="::")
@@ -113,8 +116,9 @@ if __name__ == '__main__':
     learning_rate = args.learning
     batch_size = args.batch
     num_steps = args.steps
+    momentum_factor = args.momentum
 
-    model.training(dimension,regularizer_constant,learning_rate,batch_size,num_steps)
+    model.training(dimension,regularizer_constant,learning_rate,momentum_factor,batch_size,num_steps)
     prediction = model.valid_prediction()
     print("The mean square error of the whole valid dataset is ", prediction)
     user_example = np.array([0,0,0,0,0,0,0,0,0,0])

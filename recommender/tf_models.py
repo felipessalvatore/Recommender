@@ -101,7 +101,7 @@ class SVD(object):
         self.best_acc_test = float('inf')
 
 
-    def set_graph(self,hp_dim,hp_reg,learning_rate):
+    def set_graph(self,hp_dim,hp_reg,learning_rate,momentum_factor):
         """
         This function only sets the tensorflow graph and stores it
         as self.graph. Here we do not keep the log to pass it to
@@ -113,10 +113,12 @@ class SVD(object):
         :type hp_dim: int
         :type hp_reg: float
         :type learning_rate: float
+        :type momentum_factor: float
         """
         self.dimension = hp_dim
         self.regularizer = hp_reg
         self.learning_rate = learning_rate
+        self.momentum_factor = momentum_factor
         self.graph = tf.Graph()
         with self.graph.as_default():
 
@@ -138,7 +140,7 @@ class SVD(object):
             with tf.name_scope('training'):
                 global_step = tf.contrib.framework.assert_or_get_global_step()
                 assert global_step is not None
-                self.train_op = tf.train.MomentumOptimizer(learning_rate,0.9).minimize(self.tf_cost, global_step=global_step)
+                self.train_op = tf.train.MomentumOptimizer(learning_rate,momentum_factor).minimize(self.tf_cost, global_step=global_step)
 
             #Saver
             self.saver = tf.train.Saver()
@@ -152,7 +154,7 @@ class SVD(object):
                 self.acc_op =  tf.sqrt(tf.reduce_mean(tf.pow(tf.sub(self.infer,self.tf_rate_batch),2)))
 
 
-    def training(self,hp_dim,hp_reg,learning_rate,num_steps):
+    def training(self,hp_dim,hp_reg,learning_rate,momentum_factor,num_steps):
         """
         After created the graph this function run it in a Session for
         training. We print some information just to keep track of the
@@ -163,9 +165,10 @@ class SVD(object):
         :type hp_dim: int
         :type hp_reg: float
         :type learning_rate: float
+        :type momentum_factor: float
         :type num_steps: int
         """
-        self.set_graph(hp_dim,hp_reg,learning_rate)
+        self.set_graph(hp_dim,hp_reg,learning_rate,momentum_factor)
         self.num_steps = num_steps
         marker = ''
 
@@ -231,7 +234,7 @@ class SVD(object):
         if self.dimension == None and self.regularizer == None:
             print("You can not have a prediction without training!!!!")
         else:
-            self.set_graph(self.dimension,self.regularizer,self.learning_rate)
+            self.set_graph(self.dimension,self.regularizer,self.learning_rate,self.momentum_factor)
             with tf.Session(graph=self.graph) as sess:
                 self.saver.restore(sess=sess, save_path=self.save_path)
                 users, items, rates = self.valid_batch_generator.get_batch()
