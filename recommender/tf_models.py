@@ -45,7 +45,13 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
         infer = tf.add(infer, bias_global)
         infer = tf.add(infer, bias_user)
         infer = tf.add(infer, bias_item, name="svd_inference")
-        regularizer = tf.add(tf.nn.l2_loss(embd_user), tf.nn.l2_loss(embd_item), name="svd_regularizer")
+        l2_user = tf.sqrt(tf.nn.l2_loss(embd_user))
+        l2_item = tf.sqrt(tf.nn.l2_loss(embd_item))
+        bias_user_sq = tf.square(bias_user) 
+        bias_item_sq = tf.square(bias_item)
+        bias_sum = tf.add(bias_user_sq,bias_item_sq)
+        l2_sum = tf.add(l2_user, l2_item)  
+        regularizer = tf.add(l2_sum, bias_sum, name="svd_regularizer")
     dic_of_values = {'infer': infer, 'regularizer': regularizer, 'w_user': w_user, 'w_item': w_item}    
     return dic_of_values
 
@@ -62,7 +68,7 @@ def loss_function(infer, regularizer, rate_batch,reg):
     :type rate_batch: tensor of int32    
     :type reg: float
     """
-    cost_l2 = tf.nn.l2_loss(tf.sub(infer, rate_batch))
+    cost_l2 = tf.square(tf.sub(rate_batch,infer))
     penalty = tf.constant(reg, dtype=tf.float32, shape=[], name="l2")
     cost = tf.add(cost_l2, tf.mul(regularizer, penalty))
     return cost
