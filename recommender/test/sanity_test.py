@@ -52,11 +52,13 @@ class TestRecomendation(unittest.TestCase):
         dimension = 15
         regularizer_constant = 0.05
         learning_rate = 0.001
+        momentum_factor = 0.9        
         batch_size = 1000
         num_steps = 5000
 
+
         print("\n")
-        model.training(dimension,regularizer_constant,learning_rate,batch_size,num_steps)
+        model.training(dimension,regularizer_constant,learning_rate,momentum_factor,batch_size,num_steps)
         prediction = model.valid_prediction()
         self.assertTrue(prediction <=1.1, \
                             "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
