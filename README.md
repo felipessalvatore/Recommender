@@ -1,14 +1,11 @@
 # Recommender
 
-This project is my first attempt to create a recommendation system using tensorflow. My first idea was to contribute to [TF-recomm](https://github.com/songgc/TF-recomm). But since my code took its own direction I decided to create this repository instead. Like that repository I am trying to implement the models presented in [Factorization Meets the Neighborhood](http://www.cs.rochester.edu/twiki/pub/Main/HarpSeminar/Factorization_Meets_the_Neighborhood-_a_Multifaceted_Collaborative_Filtering_Model.pdf). The only model implemented so far (SVDmodel) is the one described in section 2.3 of that paper. The equation is:
+This project is my first attempt to create a recommendation system using tensorflow. My first idea was to contribute to [TF-recomm](https://github.com/songgc/TF-recomm). But since my code took its own direction I decided to create this repository instead. Like that repository I am trying to implement the models presented in [Factorization Meets the Neighborhood](http://www.cs.rochester.edu/twiki/pub/Main/HarpSeminar/Factorization_Meets_the_Neighborhood-_a_Multifaceted_Collaborative_Filtering_Model.pdf) using the dataset [Movielens](http://grouplens.org/datasets/movielens/). The only model implemented so far (SVDmodel) is the one described in section 2.3 of that paper. The equation for the loss function of this model is:
 
-![equation](http://www.sciweavers.org/tex2img.php?eq=1%2Bsin%28mc%5E2%29&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=)
-
-
+![equation](http://www.sciweavers.org/tex2img.php?eq=min_%7Bp_%7B%2A%7D%2Cq_%7B%2A%7D%2Cb_%7B%2A%7D%7D%20%5Csum_%7B%28u%2Ci%29%20%5Cin%20K%7D%28r_%7Bui%7D%20-%5Cmu%20-b_%7Bu%7D%20-b_%7Bi%7D%20-p_%7Bu%7D%5E%7BT%7Dq_%7Bi%7D%29%5E%7B2%7D%20%2B%20%5Clambda_%7B3%7D%28%7C%7Cp_%7Bu%7D%7C%7C%5E%7B2%7D%20%2B%20%7C%7Cq_%7Bi%7D%7C%7C%5E%7B2%7D%20%2B%20b_%7Bu%7D%5E%7B2%7D%20%2B%20b_%7Bi%7D%5E%7B2%7D%29&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0[/img])
 
 
-
-This was a one week project. So it is very sloppy.
+This was a one week project. So it is all very sloppy.
 
 
 ### Requirements
@@ -35,7 +32,8 @@ optional arguments:
   -s STEPS, --steps STEPS
                         number of training (default=5000)
   -p PATH, --path PATH  ratings path (default=pwd/movielens/ml-1m/ratings.dat)
-
+  -m MOMENTUM, --momentum MOMENTUM
+                        momentum factor (default=0.9)
 ```
 
 
@@ -47,32 +45,37 @@ bash download_data.sh
 python3 recommender.py -s 20000
 
 >> step batch_error test_error elapsed_time
-  0 5.084445 4.942362* 0.239430(s)
-1000 0.929015 0.903099* 1.532874(s)
-2000 0.906508 0.870875* 1.558963(s)
-3000 0.912761 0.920425 1.288688(s)
-4000 0.921081 0.935999 1.289051(s)
-5000 0.938996 0.896651 1.294045(s)
-6000 0.901377 0.940087 1.289458(s)
-7000 0.921445 0.898008 1.293325(s)
-8000 0.906284 0.914094 1.291086(s)
-9000 0.935321 0.928757 1.290218(s)
-10000 0.964433 0.891465 1.281327(s)
-11000 0.920245 0.881295 1.294385(s)
-12000 0.931613 0.923730 1.282514(s)
-13000 0.933952 0.908893 1.278047(s)
-14000 0.900219 0.944106 1.279870(s)
-15000 0.910001 0.900789 1.294415(s)
-16000 0.950454 0.902835 1.294333(s)
-17000 0.922296 0.939806 1.279068(s)
-18000 0.877817 0.888710 1.280873(s)
-19000 0.904908 0.908056 1.277388(s)
+  0 4.073770 4.101110* 0.237425(s)
+1000 0.931412 0.973595* 1.529423(s)
+2000 0.913438 0.925822* 1.576900(s)
+3000 0.926782 0.918592* 1.524989(s)
+4000 0.901126 0.916897* 1.535359(s)
+5000 0.899008 0.992615 1.285739(s)
+6000 0.930125 0.930230 1.283590(s)
+7000 0.938554 0.932051 1.291614(s)
+8000 0.899618 0.914168* 1.566624(s)
+9000 0.894170 0.933366 1.286368(s)
+10000 0.925143 0.950335 1.295246(s)
+11000 0.902990 0.901682* 1.518931(s)
+12000 0.945003 0.945029 1.283664(s)
+13000 0.922796 0.904910 1.291076(s)
+14000 0.881359 0.926066 1.282692(s)
+15000 0.926298 0.932974 1.283417(s)
+16000 0.889660 0.911729 1.279145(s)
+17000 0.927255 0.954901 1.300359(s)
+18000 0.910293 0.937727 1.285614(s)
+19000 0.954403 0.937461 1.293204(s)
  
->> The duration of the whole training with 20000 steps is 26.50 seconds,
-which is equal to:  0:0:0:26 (DAYS:HOURS:MIN:SEC)
->> The mean square error of the whole valid dataset is  1.07996
+>> The duration of the whole training with 20000 steps is 27.50 seconds,
+which is equal to:  0:0:0:27 (DAYS:HOURS:MIN:SEC)
+
+>> The mean square error of the whole valid dataset is  0.919379
+
 >> Using our model for one specific user we predicted the score of 10 movies as:
-[ 5.  4.  5.  5.  5.  5.  5.  5.  5.  5.]
-And in reality the scores are:
+[ 4.63046455  3.73141932  4.4607563   4.1839838   4.10344076  4.51128387
+  4.15068197  4.45693159  4.20441914  4.53234148]
+
+>> And in reality the scores are:
 [5 3 3 4 5 3 5 5 4 4]
+
 ```
