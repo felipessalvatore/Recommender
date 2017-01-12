@@ -105,7 +105,7 @@ if __name__ == '__main__':
     parser.add_argument("-s", "--steps",type=int, default=5000, help="number of training (default=5000)")
     parser.add_argument("-p", "--path",type=str, default=path, help="ratings path (default=pwd/movielens/ml-1m/ratings.dat)")
     parser.add_argument("-m", "--momentum",type=float, default=0.9, help="momentum factor (default=0.9)")
-    
+
     args = parser.parse_args()
 
     df = dfFunctions.get_data(args.path, sep="::")
@@ -120,13 +120,13 @@ if __name__ == '__main__':
 
     model.training(dimension,regularizer_constant,learning_rate,momentum_factor,batch_size,num_steps)
     prediction = model.valid_prediction()
-    print("The mean square error of the whole valid dataset is ", prediction)
+    print("\nThe mean square error of the whole valid dataset is ", prediction)
     user_example = np.array([0,0,0,0,0,0,0,0,0,0])
     movies_example = np.array([1192,660,913,3407,2354,1196,1286,2803,593,918])
     actual_ratings = np.array([5,3,3,4,5,3,5,5,4,4])
     predicted_ratings = model.prediction(user_example,movies_example)
-    print("Using our model for one specific user we predicted the score of 10 movies as:")
+    print("\nUsing our model for one specific user we predicted the score of 10 movies as:")
     print(predicted_ratings)
-    print("And in reality the scores are:")
+    print("\nAnd in reality the scores are:")
     print(actual_ratings)
 
