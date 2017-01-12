@@ -7,18 +7,18 @@ from os import getcwd
 
 
 class SVDmodel(object):
-    """ 
+    """
     Class to creat SVD models. This class does not deal with tensorflow. It
     separate the dataframe in three parts: train, test and validation; with
-    that it comunicates with the class tf_models.SVD to creat a training 
-    session and to create a prediction. 
+    that it comunicates with the class tf_models.SVD to creat a training
+    session and to create a prediction.
 
     We use the params users, items and ratings to get the names
     from the columns of df.
 
 
-    :type df: dataframe  
-    :type users: string  
+    :type df: dataframe
+    :type users: string
     :type items: string
     :type ratings: string
     """
@@ -31,12 +31,12 @@ class SVDmodel(object):
         self.num_of_users = max(self.df[self.users]) + 1
         self.num_of_items = max(self.df[self.items]) + 1
         self.train,self.test,self.valid = self.data_separation()
-        
+
     def data_separation(self):
-        """ 
+        """
         Method that randomizes the dataframe df and separate it
         in tree parts: 80% in traing, 10% in test and 10% in validation.
-        
+
         :rtype: triple of dataframes
         """
         rows = len(self.df)
@@ -50,13 +50,13 @@ class SVDmodel(object):
 
 
     def training(self,hp_dim,hp_reg,learning_rate,batch_size,num_steps):
-        """ 
+        """
         This method creates three batch generators: one for the train df,
         other for the test df, and another for the valid df (this last one will
         creats batchs of the size of the whole valid df); and it also creats
-        one object tf_models.SVD (a kind of counterpart of the object SVDmodel 
+        one object tf_models.SVD (a kind of counterpart of the object SVDmodel
         that works with tensorflow) and request one training to tf_models.SVD.
-        The object tf_models.SVD is save as self.tf_counterpart for the 
+        The object tf_models.SVD is save as self.tf_counterpart for the
         prediction.
 
         :type hp_dim: int
@@ -73,16 +73,16 @@ class SVDmodel(object):
         self.tf_counterpart.print_stats()
 
     def valid_prediction(self):
-        """ 
+        """
         This method calls the tf_models.SVD and returns the mean
         square error of the whole valid dataset.
 
         :rtype: float
         """
         return self.tf_counterpart.prediction(show_valid=True)
-       
+
     def prediction(self,list_of_users,list_of_items):
-        """ 
+        """
         Given one np.array of users and one np.array of items,
         this method calls the tf_models.SVD and returns one np.array
         of predicted ratings.
@@ -90,7 +90,7 @@ class SVDmodel(object):
         :rtype: numpy array of floats
         """
         return self.tf_counterpart.prediction(list_of_users,list_of_items)
-        
+
 
 if __name__ == '__main__':
     import argparse
@@ -116,7 +116,19 @@ if __name__ == '__main__':
 
     model.training(dimension,regularizer_constant,learning_rate,batch_size,num_steps)
     prediction = model.valid_prediction()
+<<<<<<< HEAD
     print("The mean square error of the whole valid dataset is ", prediction) 
 
 
         
+=======
+    print("The mean square error of the whole valid dataset is ", prediction)
+    user_example = np.array([0,0,0,0,0,0,0,0,0,0])
+    movies_example = np.array([1192,660,913,3407,2354,1196,1286,2803,593,918])
+    actual_ratings = np.array([5,3,3,4,5,3,5,5,4,4])
+    predicted_ratings = model.prediction(user_example,movies_example)
+    print("Using our model for one specific user we predicted the score of 10 movies as:")
+    print(predicted_ratings)
+    print("And in reality the scores are:")
+    print(actual_ratings)
+>>>>>>> exploration
