@@ -19,13 +19,13 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
     We calculate also a regularizer to use in the loss function. This function
     returns a dictionary with the tensors infer, regularizer, w_user (tensor with
     all the user vectors) and w_items (tensor with all the item vectors).
-    
-    :type item_batch: tensor of int32     
-    :type user_batch: tensor of int32    
+
+    :type item_batch: tensor of int32
+    :type user_batch: tensor of int32
     :type user_num: int
     :type item_num: int
     :type dim: int
-    :rtype: dictionary   
+    :rtype: dictionary
 
     """
     with tf.name_scope('Declaring_variables'):
@@ -47,10 +47,10 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
         infer = tf.add(infer, bias_item, name="svd_inference")
         l2_user = tf.sqrt(tf.nn.l2_loss(embd_user))
         l2_item = tf.sqrt(tf.nn.l2_loss(embd_item))
-        bias_user_sq = tf.square(bias_user) 
+        bias_user_sq = tf.square(bias_user)
         bias_item_sq = tf.square(bias_item)
         bias_sum = tf.add(bias_user_sq,bias_item_sq)
-        l2_sum = tf.add(l2_user, l2_item)  
+        l2_sum = tf.add(l2_user, l2_item)
         regularizer = tf.add(l2_sum, bias_sum, name="svd_regularizer")
     dic_of_values = {'infer': infer, 'regularizer': regularizer, 'w_user': w_user, 'w_item': w_item}    
     return dic_of_values
@@ -58,14 +58,14 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
 
 def loss_function(infer, regularizer, rate_batch,reg):
     """
-    Given one tensor with all the predictions from the batch (infer) 
-    and one tensor with all the real scores from the batch (rate_batch) 
+    Given one tensor with all the predictions from the batch (infer)
+    and one tensor with all the real scores from the batch (rate_batch)
     we calculate, using numpy sintax, the cost_l2 = np.sum((infer - rate_batch)**2)*0.5
-    After that this function return cost_l2 + regularizer*reg 
-    
-    :type infer: tensor of float32     
+    After that this function return cost_l2 + regularizer*reg
+
+    :type infer: tensor of float32
     :type regularizer: tensor, shape=[],dtype=float32
-    :type rate_batch: tensor of int32    
+    :type rate_batch: tensor of int32
     :type reg: float
     """
     cost_l2 = tf.square(tf.sub(rate_batch,infer))
@@ -81,7 +81,7 @@ class SVD(object):
     tensorflow graph, it also run the graph in a Session for training
     and for prediction.
 
-    :type num_of_users: int  
+    :type num_of_users: int
     :type num_of_items: int
     :type train_batch_generator: dfFunctions.BatchGenerator
     :type test_batch_generator: dfFunctions.BatchGenerator
@@ -93,7 +93,7 @@ class SVD(object):
         self.train_batch_generator = train_batch_generator
         self.test_batch_generator = test_batch_generator
         self.valid_batch_generator = valid_batch_generator
-        self.general_duration = 0 
+        self.general_duration = 0
         self.num_steps = 0
         self.dimension = None
         self.regularizer = None
@@ -108,7 +108,7 @@ class SVD(object):
         Tensorboard. We save the params hp_dim, hp_reg and learning_rate
         as self.dimension, self.regularizer, self.learning_rate,
         respectively, in order to get the same graph while doing the
-        prediction.  
+        prediction.
 
         :type hp_dim: int
         :type hp_reg: float
@@ -117,7 +117,7 @@ class SVD(object):
         self.dimension = hp_dim
         self.regularizer = hp_reg
         self.learning_rate = learning_rate
-        self.graph = tf.Graph() 
+        self.graph = tf.Graph()
         with self.graph.as_default():
 
             #Placeholders
@@ -138,7 +138,7 @@ class SVD(object):
             with tf.name_scope('training'):
                 global_step = tf.contrib.framework.assert_or_get_global_step()
                 assert global_step is not None
-                self.train_op = tf.train.AdamOptimizer(learning_rate).minimize(self.tf_cost, global_step=global_step)
+                self.train_op = tf.train.MomentumOptimizer(learning_rate,0.9).minimize(self.tf_cost, global_step=global_step)
 
             #Saver
             self.saver = tf.train.Saver()
@@ -151,7 +151,7 @@ class SVD(object):
             with tf.name_scope('accuracy'):
                 self.acc_op =  tf.sqrt(tf.reduce_mean(tf.pow(tf.sub(self.infer,self.tf_rate_batch),2)))
 
-    
+
     def training(self,hp_dim,hp_reg,learning_rate,num_steps):
         """
         After created the graph this function run it in a Session for
@@ -192,7 +192,7 @@ class SVD(object):
                     print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step,train_error,test_error,marker,
                                                            end - start))
                     marker = ''
-                    start = end 
+                    start = end
         self.general_duration = time.time() - initial_time
 
     def print_stats(self):
@@ -249,7 +249,7 @@ class SVD(object):
                         valid_error = ceil_error
                         self.command = "ceil"
 
-                    return valid_error        
+                    return valid_error
                 else:
                     feed_dict = {self.tf_user_batch: list_of_users, self.tf_item_batch: list_of_items, self.tf_rate_batch: rates}
                     prediction = sess.run(self.infer, feed_dict=feed_dict)
@@ -260,4 +260,4 @@ class SVD(object):
                         return prediction
                     else:
                         prediction = np.ceil(prediction)
-                        return prediction 
+                        return prediction

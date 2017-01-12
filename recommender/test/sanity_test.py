@@ -42,7 +42,7 @@ class TestRecomendation(unittest.TestCase):
     def test_upperbound(self):
         """
         A very basic test to check if the otimization is working.
-        We run 7000 steps of training and check if the mean square error
+        We run 5000 steps of training and check if the mean square error
         from the valid dataset is less than 1.1
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
@@ -53,7 +53,7 @@ class TestRecomendation(unittest.TestCase):
         regularizer_constant = 0.05
         learning_rate = 0.001
         batch_size = 1000
-        num_steps = 7000
+        num_steps = 5000
 
         print("\n")
         model.training(dimension,regularizer_constant,learning_rate,batch_size,num_steps)
