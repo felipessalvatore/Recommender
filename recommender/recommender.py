@@ -116,12 +116,6 @@ if __name__ == '__main__':
 
     model.training(dimension,regularizer_constant,learning_rate,batch_size,num_steps)
     prediction = model.valid_prediction()
-<<<<<<< HEAD
-    print("The mean square error of the whole valid dataset is ", prediction) 
-
-
-        
-=======
     print("The mean square error of the whole valid dataset is ", prediction)
     user_example = np.array([0,0,0,0,0,0,0,0,0,0])
     movies_example = np.array([1192,660,913,3407,2354,1196,1286,2803,593,918])
@@ -131,4 +125,4 @@ if __name__ == '__main__':
     print(predicted_ratings)
     print("And in reality the scores are:")
     print(actual_ratings)
->>>>>>> exploration
+
