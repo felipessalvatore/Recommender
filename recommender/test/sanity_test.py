@@ -43,7 +43,7 @@ class TestRecomendation(unittest.TestCase):
         """
         A very basic test to check if the otimization is working.
         We run 5000 steps of training and check if the mean square error
-        from the valid dataset is less than 1.1
+        from the valid dataset is less than 1.0
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.get_data(path, sep="::")
@@ -60,7 +60,7 @@ class TestRecomendation(unittest.TestCase):
         print("\n")
         model.training(dimension,regularizer_constant,learning_rate,momentum_factor,batch_size,num_steps)
         prediction = model.valid_prediction()
-        self.assertTrue(prediction <=1.1, \
+        self.assertTrue(prediction <=1.0, \
                             "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
                             .format(num_steps,prediction))
 
