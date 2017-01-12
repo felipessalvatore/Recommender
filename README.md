@@ -16,8 +16,7 @@ This was a one week project. So it is all very sloppy.
 ## Usage
 
 ```
-$ 
-python3 recommender.py --help
+$ python3 recommender.py --help
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -40,8 +39,7 @@ optional arguments:
 ## Example
 
 ```
-$
-bash download_data.sh
+$ bash download_data.sh
 python3 recommender.py -s 20000
 
 >> step batch_error test_error elapsed_time
