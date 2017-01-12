@@ -79,7 +79,7 @@ class SVDmodel(object):
 
         :rtype: float
         """
-        return self.tf_counterpart.prediction(show_valid=True)
+        return self.tf_counterpart.prediction(show_valid=True) 
        
     def prediction(self,list_of_users,list_of_items):
         """ 

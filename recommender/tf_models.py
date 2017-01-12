@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from utils import accuracy
 import os
 import time
@@ -90,6 +91,7 @@ class SVD(object):
         self.num_steps = 0
         self.dimension = None
         self.regularizer = None
+        self.command = None
         self.best_acc_test = float('inf')
 
 
@@ -181,7 +183,7 @@ class SVD(object):
                         self.saver.save(sess=sess, save_path=self.save_path)
 
                     end = time.time()
-                    print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step, train_error, test_error,marker,
+                    print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step,train_error,test_error,marker,
                                                            end - start))
                     marker = ''
                     start = end 
@@ -209,7 +211,10 @@ class SVD(object):
         of the whole valid dataset (if show_valid == True),  or the user
         can use two np.arrays of the same size (one is a list of users
         and the other is a list of items) and this function will return
-        what is the predicted score (as a np array of floats).
+        what is the predicted score (as a np array of floats). In the first
+        case the method will check if better to use the ceil function or
+        the floor function, we want the prediction to be a list of ints
+        in order to emulate the real predictions.
 
         :type list_of_users: numpy array of ints
         :type list_of_items: numpy array of ints
@@ -226,9 +231,27 @@ class SVD(object):
                 users, items, rates = self.valid_batch_generator.get_batch()
                 if show_valid:
                     feed_dict = {self.tf_user_batch: users, self.tf_item_batch: items, self.tf_rate_batch: rates}
-                    valid_error = sess.run(self.acc_op, feed_dict=feed_dict)
-                    return valid_error         
+                    prediction = sess.run(self.infer, feed_dict=feed_dict)
+                    floor_prediction = np.floor(prediction)
+                    ceil_prediction = np.ceil(prediction)
+                    floor_error = accuracy(floor_prediction,rates)
+                    ceil_error = accuracy(ceil_prediction,rates)
+                    if floor_error <= ceil_error:
+                        valid_error = floor_error
+                        self.command = "floor"
+                    else:
+                        valid_error = ceil_error
+                        self.command = "ceil"
+
+                    return valid_error        
                 else:
                     feed_dict = {self.tf_user_batch: list_of_users, self.tf_item_batch: list_of_items, self.tf_rate_batch: rates}
                     prediction = sess.run(self.infer, feed_dict=feed_dict)
-                    return prediction    
+                    if self.command == None:
+                        return prediction
+                    elif self.command == "floor":
+                        prediction = np.floor(prediction)
+                        return prediction
+                    else:
+                        prediction = np.ceil(prediction)
+                        return prediction 
