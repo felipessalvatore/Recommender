@@ -108,8 +108,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    df = dfFunctions.load_data(args.path)
-    model = SVDmodel(df,'user', 'item','rate')
+    df = dfFunctions.load_dataframe(args.path)
+    model = SVDmodel(df,'user', 'item','rating')
 
     dimension = args.dimension
     regularizer_constant = args.reg

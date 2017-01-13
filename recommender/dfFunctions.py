@@ -3,13 +3,13 @@ import pandas as pd
 
 def load_dataframe(path,sep="::"):
     """
-    Given one filepath path and one separator sep, 
+    Given one filepath path and one separator sep,
     it returns one dataframe with columns user (int),
     item (int) and ratings (float). This function assumes
     that we are working only the datasets from movielens.
 
 
-    :type path: string  
+    :type path: string
     :type sep: string
     :rtype: dataframe
     """
@@ -31,12 +31,12 @@ def load_dataframe(path,sep="::"):
 
 def get_data(filname, sep="\t"):
     """
-    Given one filepath filename and one separator sep, 
+    Given one filepath filename and one separator sep,
     it returns one dataframe with columns user (int),
     item (int) and rate (float).
 
 
-    :type filename: string  
+    :type filename: string
     :type sep: string
     :rtype: dataframe
     """
@@ -58,13 +58,13 @@ class BatchGenerator(object):
     the score information, respectively.
 
 
-    :type df: dataframe  
+    :type df: dataframe
     :type batch_size: int
-    :type users: string  
+    :type users: string
     :type items: string
     :type ratings: string
     """
-    
+
     def __init__(self,df,batch_size,users,items,ratings):
         self.batch_size = batch_size
         self.users = np.array(df[users])
@@ -72,7 +72,7 @@ class BatchGenerator(object):
         self.ratings = np.array(df[ratings])
         self.num_cols = len(df.columns)
         self.size = len(df)
-        
+
     def get_batch(self):
         """
         Every time we call this method, a new list of size batch_size
@@ -85,5 +85,5 @@ class BatchGenerator(object):
         random_indices = np.random.randint(0,self.size,self.batch_size)
         users = self.users[random_indices]
         items = self.items[random_indices]
-        ratings = self.ratings[random_indices]         
+        ratings = self.ratings[random_indices]
         return users, items, ratings

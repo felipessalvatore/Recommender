@@ -28,17 +28,17 @@ class TestRecomendation(unittest.TestCase):
         self.assertTrue(accuracy(array3,array1) == 1)
 
 
-    def test_load_data(self):
+    def test_load_dataframe(self):
         """
-        Test to check if the function load_data is working
+        Test to check if the function load_dataframe is working
         with all the datasets from movielens.
         """
         path1 = parent_path + '/movielens/ml-1m/ratings.dat'
         path10 = parent_path + '/movielens/ml-10m/ratings.dat'
         path20 = parent_path + '/movielens/ml-20m/ratings.csv'
-        df1 = dfFunctions.load_data(path1)
-        df10 = dfFunctions.load_data(path10)
-        df20 = dfFunctions.load_data(path20)        
+        df1 = dfFunctions.load_dataframe(path1)
+        df10 = dfFunctions.load_dataframe(path10)
+        df20 = dfFunctions.load_dataframe(path20)
         self.assertTrue(type(df1) == pd.core.frame.DataFrame)
         self.assertTrue(type(df10) == pd.core.frame.DataFrame)
         self.assertTrue(type(df20) == pd.core.frame.DataFrame)
@@ -51,13 +51,13 @@ class TestRecomendation(unittest.TestCase):
         from the valid dataset is less than 1.0
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
-        df = dfFunctions.load_data(path)
-        model = re.SVDmodel(df,'user', 'item','rate')
+        df = dfFunctions.load_dataframe(path)
+        model = re.SVDmodel(df,'user', 'item','rating')
 
         dimension = 15
         regularizer_constant = 0.05
         learning_rate = 0.001
-        momentum_factor = 0.9        
+        momentum_factor = 0.9
         batch_size = 1000
         num_steps = 5000
 
