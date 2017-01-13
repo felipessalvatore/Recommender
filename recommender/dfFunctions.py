@@ -29,27 +29,6 @@ def load_dataframe(path,sep="::"):
         df = raw_df[["user", "item", "rating"]]
         return df
 
-def get_data(filname, sep="\t"):
-    """
-    Given one filepath filename and one separator sep,
-    it returns one dataframe with columns user (int),
-    item (int) and rate (float).
-
-
-    :type filename: string
-    :type sep: string
-    :rtype: dataframe
-    """
-    col_names = ["user", "item", "rate", "st"]
-    df = pd.read_csv(filname, sep=sep, header=None, names=col_names, engine='python')
-    df["user"] -= 1
-    df["item"] -= 1
-    for col in ("user", "item"):
-        df[col] = df[col].astype(np.int32)
-    df["rate"] = df["rate"].astype(np.float32)
-    return df
-
-
 class BatchGenerator(object):
     """
     Class to generate batches using one dataframe and one number
