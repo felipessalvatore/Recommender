@@ -1,22 +1,32 @@
 import numpy as np
 import pandas as pd
 
-path1 = getcwd() + '/movielens/ml-1m/ratings.dat'
-path10 = getcwd() + '/movielens/ml-10m/ratings.dat'
-path20 = getcwd() + '/movielens/ml-20m/ratings.csv'
-
-
 def load_dataframe(path,sep="::"):
+    """
+    Given one filepath path and one separator sep, 
+    it returns one dataframe with columns user (int),
+    item (int) and ratings (float). This function assumes
+    that we are working only the datasets from movielens.
+
+
+    :type path: string  
+    :type sep: string
+    :rtype: dataframe
+    """
     if path[-3:] == 'dat':
         col_names = ["raw_user", "raw_item", "raw_rating", "st"]
-        raw_df = pd.read_csv(path, sep="::",names=col_names,engine='python')
+        raw_df = pd.read_csv(path, sep=sep,names=col_names,engine='python')
         raw_df['user'] = raw_df["raw_user"].astype(np.int32)
         raw_df['item'] = raw_df["raw_item"].astype(np.int32)
         raw_df["rating"] = raw_df["raw_rating"].astype(np.float32)
         df = raw_df[["user", "item", "rating"]]
         return df
     elif path[-3:] == 'csv':
-        df = pd.read_csv(path)
+        raw_df = pd.read_csv(path)
+        raw_df['user'] = raw_df["userId"].astype(np.int32)
+        raw_df['item'] = raw_df["movieId"].astype(np.int32)
+        raw_df["rating"] = raw_df["rating"].astype(np.float32)
+        df = raw_df[["user", "item", "rating"]]
         return df
 
 def get_data(filname, sep="\t"):

@@ -28,15 +28,20 @@ class TestRecomendation(unittest.TestCase):
         self.assertTrue(accuracy(array3,array1) == 1)
 
 
-    def test_get_data(self):
+    def test_load_data(self):
         """
-        Test to check if the function get_data is working.
+        Test to check if the function load_data is working
+        with all the datasets from movielens.
         """
-        path = parent_path + '/movielens/ml-1m/ratings.dat'
-        df = dfFunctions.get_data(path, sep="::")
-        self.assertTrue(type(df) == pd.core.frame.DataFrame)
-
-
+        path1 = parent_path + '/movielens/ml-1m/ratings.dat'
+        path10 = parent_path + '/movielens/ml-10m/ratings.dat'
+        path20 = parent_path + '/movielens/ml-20m/ratings.csv'
+        df1 = dfFunctions.load_data(path1)
+        df10 = dfFunctions.load_data(path10)
+        df20 = dfFunctions.load_data(path20)        
+        self.assertTrue(type(df1) == pd.core.frame.DataFrame)
+        self.assertTrue(type(df10) == pd.core.frame.DataFrame)
+        self.assertTrue(type(df20) == pd.core.frame.DataFrame)
 
 
     def test_upperbound(self):
@@ -46,7 +51,7 @@ class TestRecomendation(unittest.TestCase):
         from the valid dataset is less than 1.0
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
-        df = dfFunctions.get_data(path, sep="::")
+        df = dfFunctions.load_data(path)
         model = re.SVDmodel(df,'user', 'item','rate')
 
         dimension = 15

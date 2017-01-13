@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    df = dfFunctions.get_data(args.path, sep="::")
+    df = dfFunctions.load_data(args.path)
     model = SVDmodel(df,'user', 'item','rate')
 
     dimension = args.dimension
