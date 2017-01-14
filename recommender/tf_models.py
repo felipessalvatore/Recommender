@@ -40,7 +40,7 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
                                  initializer=tf.truncated_normal_initializer(stddev=0.02))
         embd_user = tf.nn.embedding_lookup(w_user, user_batch, name="embedding_user")
         embd_item = tf.nn.embedding_lookup(w_item, item_batch, name="embedding_item")
-    with tf.name_scope('Rating_prediction'):
+    with tf.name_scope('Prediction_regularizer'):
         infer = tf.reduce_sum(tf.mul(embd_user, embd_item), 1)
         infer = tf.add(infer, bias_global)
         infer = tf.add(infer, bias_user)
@@ -60,8 +60,8 @@ def loss_function(infer, regularizer, rate_batch,reg):
     """
     Given one tensor with all the predictions from the batch (infer)
     and one tensor with all the real scores from the batch (rate_batch)
-    we calculate, using numpy sintax, the cost_l2 = np.sum((infer - rate_batch)**2)*0.5
-    After that this function return cost_l2 + regularizer*reg
+    we calculate, using numpy sintax, cost_l2 = np.sum((infer - rate_batch)**2)
+    After that this function return cost_l2 + lambda3*regularizer.
 
     :type infer: tensor of float32
     :type regularizer: tensor, shape=[],dtype=float32
@@ -69,8 +69,8 @@ def loss_function(infer, regularizer, rate_batch,reg):
     :type reg: float
     """
     cost_l2 = tf.square(tf.sub(rate_batch,infer))
-    penalty = tf.constant(reg, dtype=tf.float32, shape=[], name="l2")
-    cost = tf.add(cost_l2, tf.mul(regularizer, penalty))
+    lambda3 = tf.constant(reg, dtype=tf.float32, shape=[], name="lambda3")
+    cost = tf.add(cost_l2, tf.mul(regularizer, lambda3))
     return cost
 
 
@@ -158,7 +158,7 @@ class SVD(object):
         After created the graph this function run it in a Session for
         training. We print some information just to keep track of the
         training. Every time the accuracy of the test batch is decrease
-        we save the variables of the model (we use * to mark a new save)
+        we save the variables of the model (we use * to mark a new save).
 
 
         :type hp_dim: int
@@ -219,10 +219,7 @@ class SVD(object):
         of the whole valid dataset (if show_valid == True),  or the user
         can use two np.arrays of the same size (one is a list of users
         and the other is a list of items) and this function will return
-        what is the predicted score (as a np array of floats). In the first
-        case the method will check if better to use the ceil function or
-        the floor function, we want the prediction to be a list of ints
-        in order to emulate the real predictions.
+        what is the predicted score (as a np array of floats).
 
         :type list_of_users: numpy array of ints
         :type list_of_items: numpy array of ints
