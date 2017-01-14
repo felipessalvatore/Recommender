@@ -16,6 +16,9 @@ from utils import rmse
 def run_test(testClass,header):
     """ 
     Function to run all the tests from a class of tests.
+
+    :type testClass: unittest.TesCase
+    :type header: str
     """
     print(header)
     suite = unittest.TestLoader().loadTestsFromTestCase(testClass)
@@ -38,7 +41,6 @@ class TestBasic(unittest.TestCase):
         array3 = np.array([2,2,2,2])
         self.assertRaises(AssertionError, rmse, array1, array2)
         self.assertTrue(rmse(array3,array1) == 1)
-
 
 
 class TestdfManipulation(unittest.TestCase):
@@ -128,7 +130,6 @@ class TestdfManipulation(unittest.TestCase):
 class TestOptimization(unittest.TestCase):
     """
     Class with optimization tests.
-
     """
     def test_upperbound(self):
         """
@@ -154,8 +155,3 @@ class TestOptimization(unittest.TestCase):
                             "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
                             .format(num_steps,prediction))
 
-
-if __name__ == '__main__':
-    run_test(TestBasic,"\nRunning all basic tests...\n")
-    run_test(TestdfManipulation,"\nRunning all dataframe manipulation tests...\n")
-    run_test(TestOptimization,"\nRunning all optimization tests...\n")
