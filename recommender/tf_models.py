@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from utils import accuracy
+from utils import rmse
 import os
 import time
 from datetime import datetime,timedelta
@@ -148,7 +148,7 @@ class SVD(object):
                 os.makedirs(save_dir)
             self.save_path = os.path.join(save_dir, 'best_validation')
 
-            #Batch accuracy
+            #Minibatch accuracy using rmse
             with tf.name_scope('accuracy'):
                 self.acc_op =  tf.sqrt(tf.reduce_mean(tf.pow(tf.sub(self.infer,self.tf_rate_batch),2)))
 
@@ -184,7 +184,7 @@ class SVD(object):
                     users, items, rates = self.test_batch_generator.get_batch() 
                     feed_dict = {self.tf_user_batch: users, self.tf_item_batch: items, self.tf_rate_batch: rates}              
                     pred_batch = sess.run(self.infer, feed_dict=feed_dict)
-                    test_error = accuracy(pred_batch,rates)
+                    test_error = rmse(pred_batch,rates)
                     if test_error < self.best_acc_test:
                         self.best_acc_test = test_error
                         marker = "*"

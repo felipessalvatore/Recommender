@@ -29,6 +29,51 @@ def load_dataframe(path,sep="::"):
         df = raw_df[["user", "item", "rating"]]
         return df
 
+
+def count_intersection(df1,df2,df3):
+    """
+    Given three dataframes df1,df2 and df3, this function
+    counts how many shared observations these dataframes have.
+    We work with three dataframes because the intended use for 
+    this function is to deal with the train, test and valid 
+    dataframes.
+
+    This function returns a dictionary with the keys '1-2',
+    '1-3' and '2-3' representing the intersection between
+    df1 and df2, the intersection between df1 and df3 and
+    the intersection between df2 and df3, respectively.
+
+
+    :type df1: datatframe
+    :type df2: dataframe
+    :type df3: dataframe
+    :rtype: dictionary
+    """
+    from hashlib import sha1
+    raw_array1 = np.array(df1)
+    raw_array2 = np.array(df2)
+    raw_array3 = np.array(df3)
+    array1 = raw_array1.copy(order='C')
+    array2 = raw_array2.copy(order='C')
+    array3 = raw_array3.copy(order='C')
+    set1 = set([sha1(observation).hexdigest()\
+     for observation in array1])
+    set2 = set([sha1(observation).hexdigest()\
+     for observation in array2])
+    set3 = set([sha1(observation).hexdigest()\
+     for observation in array3])
+    dic = {}
+    dic['1-2'] = len(set1.intersection(set2))
+    dic['1-3'] = len(set1.intersection(set3))
+    dic['2-3'] = len(set2.intersection(set3))
+    return dic 
+
+
+
+
+
+
+
 class BatchGenerator(object):
     """
     Class to generate batches using one dataframe and one number
