@@ -16,6 +16,8 @@ def load_dataframe(path,sep="::"):
     if path[-3:] == 'dat':
         col_names = ["raw_user", "raw_item", "raw_rating", "st"]
         raw_df = pd.read_csv(path, sep=sep,names=col_names,engine='python')
+        raw_df['raw_user'] = raw_df['raw_user'] -1
+        raw_df['raw_item'] = raw_df['raw_item'] -1
         raw_df['user'] = raw_df["raw_user"].astype(np.int32)
         raw_df['item'] = raw_df["raw_item"].astype(np.int32)
         raw_df["rating"] = raw_df["raw_rating"].astype(np.float32)
@@ -23,6 +25,8 @@ def load_dataframe(path,sep="::"):
         return df
     elif path[-3:] == 'csv':
         raw_df = pd.read_csv(path)
+        raw_df['userId'] = raw_df['userId'] -1
+        raw_df['movieId'] = raw_df['movieId'] -1
         raw_df['user'] = raw_df["userId"].astype(np.int32)
         raw_df['item'] = raw_df["movieId"].astype(np.int32)
         raw_df["rating"] = raw_df["rating"].astype(np.float32)
@@ -69,9 +73,32 @@ def count_intersection(df1,df2,df3):
     return dic 
 
 
+class ItemFinder(object):
+    """
+    Class that given one user it returns the array of all items rated by that user
 
+    :type df: dataframe
+    :type users: string
+    :type items: string
+    :type ratings: string
+    """
 
+    def __init__(self,df,users,items,ratings):
+        self.users = users
+        self.items = items
+        self.df = df
 
+    def get_item(self,user):
+        """
+        Every time we call this method it returns
+        the array of items rated by the user
+
+        :type user: int 
+        :rtype: numpy arrays
+        """
+        user_df = self.df[self.df[self.users]==user]
+        user_items = np.array(user_df[self.items])
+        return user_items
 
 
 class BatchGenerator(object):
@@ -111,3 +138,12 @@ class BatchGenerator(object):
         items = self.items[random_indices]
         ratings = self.ratings[random_indices]
         return users, items, ratings
+
+if __name__ == '__main__':
+    import numpy as np
+    from os import getcwd
+    path = getcwd() + '/movielens/ml-1m/ratings.dat'
+
+    df = load_dataframe(path)
+    finder = ItemFinder(df,'user', 'item','rating')
+    print(finder.get_item(0))

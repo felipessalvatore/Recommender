@@ -131,10 +131,10 @@ class TestOptimization(unittest.TestCase):
     """
     Class with optimization tests.
     """
-    def test_upperbound(self):
+    def test_upperboundSVD(self):
         """
         We run 5000 steps of training and check if the root mean square error
-        from the valid dataset is less than 1.0
+        from the valid dataset is less than 1.0 in the SVD model
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
@@ -154,4 +154,29 @@ class TestOptimization(unittest.TestCase):
         self.assertTrue(prediction <=1.0, \
                             "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
                             .format(num_steps,prediction))
+
+    def test_upperboundNSVD(self):
+        """
+        We run 5000 steps of training and check if the root mean square error
+        from the valid dataset is less than 1.0 in the NSVD model
+        """
+        path = parent_path + '/movielens/ml-1m/ratings.dat'
+        df = dfFunctions.load_dataframe(path)
+        model = re.NSVDmodel(df,'user', 'item','rating')
+
+        dimension = 15
+        regularizer_constant = 0.05
+        learning_rate = 0.001
+        momentum_factor = 0.9
+        batch_size = 1000
+        num_steps = 5000
+
+
+        print("\n")
+        model.training(dimension,regularizer_constant,learning_rate,momentum_factor,batch_size,num_steps)
+        prediction = model.valid_prediction()
+        self.assertTrue(prediction <=1.0, \
+                            "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
+                            .format(num_steps,prediction))
+
 
