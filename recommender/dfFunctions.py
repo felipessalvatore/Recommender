@@ -100,7 +100,6 @@ class ItemFinder(object):
         user_items = np.array(user_df[self.items])
         return user_items
 
-
 class BatchGenerator(object):
     """
     Class to generate batches using one dataframe and one number
