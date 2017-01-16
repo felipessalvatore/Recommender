@@ -56,17 +56,15 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
     return dic_of_values
 
 
-def inference_nsvd(user_batch, item_batch, user_num, item_num, dim=5):
+def inference_nsvd(user_batch,item_batch,user_item_batch,size_factor,user_num, item_num,dim=5):
     """
-    ESCREVER
-
+    Escrever
     :type item_batch: tensor of int32
     :type user_batch: tensor of int32
     :type user_num: int
     :type item_num: int
     :type dim: int
     :rtype: dictionary
-
     """
     with tf.name_scope('Declaring_variables'):
         bias_global = tf.get_variable("bias_global", shape=[])
@@ -74,25 +72,26 @@ def inference_nsvd(user_batch, item_batch, user_num, item_num, dim=5):
         w_bias_item = tf.get_variable("embd_bias_item", shape=[item_num])
         bias_user = tf.nn.embedding_lookup(w_bias_user, user_batch, name="bias_user")
         bias_item = tf.nn.embedding_lookup(w_bias_item, item_batch, name="bias_item")
-        w_user = tf.get_variable("embd_user", shape=[user_num, dim],
-                                 initializer=tf.truncated_normal_initializer(stddev=0.02))
-        w_item = tf.get_variable("embd_item", shape=[item_num, dim],
-                                 initializer=tf.truncated_normal_initializer(stddev=0.02))
-        embd_user = tf.nn.embedding_lookup(w_user, user_batch, name="embedding_user")
-        embd_item = tf.nn.embedding_lookup(w_item, item_batch, name="embedding_item")
+        w_item1 = tf.get_variable(name='w_item1',shape=[item_num,dim],
+                         initializer=tf.truncated_normal_initializer(stddev=0.02))
+        w_item2 = tf.get_variable(name='w_item2',shape=[item_num,dim],
+                         initializer=tf.truncated_normal_initializer(stddev=0.02))
+        embd_item1 = tf.nn.embedding_lookup(w_item1,item_batch)
+        embd_item2 = tf.nn.embedding_lookup(w_item2,user_item_batch)
+        embd_item2 = tf.mul(tf.reduce_sum(embd_item2,1),size_factor)
     with tf.name_scope('Prediction_regularizer'):
-        infer = tf.reduce_sum(tf.mul(embd_user, embd_item), 1)
+        infer = tf.reduce_sum(tf.mul(embd_item1,embd_item2), 1)
         infer = tf.add(infer, bias_global)
         infer = tf.add(infer, bias_user)
         infer = tf.add(infer, bias_item, name="svd_inference")
-        l2_user = tf.sqrt(tf.nn.l2_loss(embd_user))
-        l2_item = tf.sqrt(tf.nn.l2_loss(embd_item))
+        l2_user = tf.sqrt(tf.nn.l2_loss(embd_item1))
+        l2_item = tf.sqrt(tf.nn.l2_loss(embd_item2))
         bias_user_sq = tf.square(bias_user)
         bias_item_sq = tf.square(bias_item)
         bias_sum = tf.add(bias_user_sq,bias_item_sq)
         l2_sum = tf.add(l2_user, l2_item)
         regularizer = tf.add(l2_sum, bias_sum, name="svd_regularizer")
-    dic_of_values = {'infer': infer, 'regularizer': regularizer, 'w_user': w_user, 'w_item': w_item}    
+    dic_of_values = {'infer': infer, 'regularizer': regularizer, 'w_item1': w_item1, 'w_item2': w_item2}
     return dic_of_values
 
 
