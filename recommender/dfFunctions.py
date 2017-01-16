@@ -87,6 +87,7 @@ class ItemFinder(object):
         self.users = users
         self.items = items
         self.df = df
+        self.dic = {}
 
     def get_item(self,user):
         """
@@ -94,11 +95,43 @@ class ItemFinder(object):
         the array of items rated by the user
 
         :type user: int 
-        :rtype: numpy arrays
+        :rtype: numpy array
         """
         user_df = self.df[self.df[self.users]==user]
         user_items = np.array(user_df[self.items])
         return user_items
+
+    def set_item_dic(self):
+        """
+        This method ret a dic: user:array_of_rated_items. The size of array_of_rated_items
+        is the size of the smallest number of rated items from an user.
+
+        :rtype items_per_users: dic
+        """
+        if not self.dic:
+            all_users = self.df[self.users].unique()
+            sizes = []
+            for user in all_users:
+                items_rated = self.get_item(user) 
+                self.dic[user]= items_rated
+                sizes.append(len(items_rated))
+            self.min_size = min(sizes)
+            self.size_factor = 1/(np.sqrt(self.min_size))
+            for user in all_users:
+                self.dic[user] = self.dic[user][0:self.min_size]
+        else:
+            pass
+    
+    def get_item_array(self,users):
+        """
+        Escrever
+
+        :type users: numpy array,dtype=int 
+        :rtype: numpy array,dtype=int
+        """
+
+        return np.array([self.dic[user] for user in users])   
+
 
 class BatchGenerator(object):
     """
