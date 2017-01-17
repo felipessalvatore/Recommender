@@ -103,8 +103,9 @@ class ItemFinder(object):
 
     def set_item_dic(self):
         """
-        This method ret a dic: user:array_of_rated_items. The size of array_of_rated_items
-        is the size of the smallest number of rated items from an user.
+        This method returns a dic: user:array_of_rated_items.
+        The size of array_of_rated_items is the size of
+        the smallest number of rated items from an user.
 
         :rtype items_per_users: dic
         """
@@ -124,7 +125,10 @@ class ItemFinder(object):
     
     def get_item_array(self,users):
         """
-        Escrever
+        Given the list user =[u1, ..., un]
+        this method returns the array [r1, ..., rn]
+        where ri is the array_of_rated_items by the user
+        ui according the dictionary self.dic.
 
         :type users: numpy array,dtype=int 
         :rtype: numpy array,dtype=int

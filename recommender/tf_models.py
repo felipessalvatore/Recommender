@@ -56,9 +56,18 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
 
 def inference_nsvd(user_batch,item_batch,user_item_batch,size_factor,user_num, item_num,dim=5):
     """
-    Escrever
+    Similar as the function inference_svd. 
+    The only difference is that we do not have a vector 
+    representation for each user. Instead we have two 
+    factor vectors for each item (w_item1 and w_item2). 
+    And we create the vector representation of a user u as the
+    array np.sum(R(u),1)*(1/np.sqrt(len(R(u)))) where R(u) 
+    is the array of all items rated by u. 
+
     :type item_batch: tensor of int32
     :type user_batch: tensor of int32
+    :type user_item_batch: tensor of int32,
+    shape=[batch size,dfFunctions.ItemFinder.min_size]
     :type user_num: int
     :type item_num: int
     :type dim: int
@@ -306,13 +315,8 @@ class NSVD(object):
 
     def set_graph(self,hp_dim,hp_reg,learning_rate,momentum_factor):
         """
-        !!!!!!!ESCREVER!!!!!
-        This function only sets the tensorflow graph and stores it
-        as self.graph. Here we do not keep the log to pass it to
-        Tensorboard. We save the params hp_dim, hp_reg and learning_rate
-        as self.dimension, self.regularizer, self.learning_rate,
-        respectively, in order to get the same graph while doing the
-        prediction.
+        Method to set the tensorflow graph and store it
+        as self.graph.
 
         :type hp_dim: int
         :type hp_reg: float
@@ -346,7 +350,7 @@ class NSVD(object):
             with tf.name_scope('training'):
                 global_step = tf.contrib.framework.assert_or_get_global_step()
                 assert global_step is not None
-                self.train_op = tf.train.GradientDescentOptimizer(learning_rate).minimize(self.tf_cost, global_step=global_step)
+                self.train_op = tf.train.MomentumOptimizer(learning_rate,momentum_factor).minimize(self.tf_cost, global_step=global_step)
 
             #Saver
             self.saver = tf.train.Saver()
@@ -362,11 +366,8 @@ class NSVD(object):
 
     def training(self,hp_dim,hp_reg,learning_rate,momentum_factor,num_steps):
         """
-        !!!!!!!ESCREVER!!!!!
         After created the graph this function run it in a Session for
-        training. We print some information just to keep track of the
-        training. Every time the accuracy of the test batch is decrease
-        we save the variables of the model (we use * to mark a new save).
+        training.
 
 
         :type hp_dim: int
@@ -427,14 +428,7 @@ class NSVD(object):
 
     def prediction(self,list_of_users=None,list_of_items=None,show_valid=False):
         """
-        !!!!!!!ESCREVER!!!!!
-        Prediction function. This function loads the tensorflow graph
-        with the same params from the training and with the saved
-        variables. The user can either check what is the mean square error
-        of the whole valid dataset (if show_valid == True),  or the user
-        can use two np.arrays of the same size (one is a list of users
-        and the other is a list of items) and this function will return
-        what is the predicted score (as a np array of floats).
+        Prediction function. Similar as the one from SVD.
 
         :type list_of_users: numpy array of ints
         :type list_of_items: numpy array of ints

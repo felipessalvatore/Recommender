@@ -164,7 +164,7 @@ class TestOptimization(unittest.TestCase):
         df = dfFunctions.load_dataframe(path)
         model = re.NSVDmodel(df,'user', 'item','rating')
 
-        dimension = 15
+        dimension = 10
         regularizer_constant = 0.05
         learning_rate = 0.001
         momentum_factor = 0.9
