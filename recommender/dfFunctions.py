@@ -170,12 +170,3 @@ class BatchGenerator(object):
         items = self.items[random_indices]
         ratings = self.ratings[random_indices]
         return users, items, ratings
-
-if __name__ == '__main__':
-    import numpy as np
-    from os import getcwd
-    path = getcwd() + '/movielens/ml-1m/ratings.dat'
-
-    df = load_dataframe(path)
-    finder = ItemFinder(df,'user', 'item','rating')
-    print(finder.get_item(0))

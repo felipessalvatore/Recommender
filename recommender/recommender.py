@@ -93,6 +93,7 @@ class SVDmodel(object):
         return self.tf_counterpart.prediction(list_of_users,list_of_items)
 
 
+#!!!Fazer NSVDmodel como uma classe filha da classe SVD!!!!!
 
 class NSVDmodel(object):
     """
