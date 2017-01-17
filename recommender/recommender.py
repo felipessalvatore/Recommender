@@ -128,7 +128,7 @@ class NSVDmodel(SVDmodel):
 
     In this dataset the number of rated items per user is very different: some
     is around 1000 others around 20. And in each minibatch of users I could not
-    only pass theses arrays in the raw shape (since they have different sizes).
+    only pass theses arrays with their raw shapes (since they have different sizes).
     So I decided to normalize all the arrays of rated items. The method
     set_item_dic of the class ItemFinder, creates a dictionary of users
     and rated items, find the smallest size of an array of rated items,
@@ -136,7 +136,7 @@ class NSVDmodel(SVDmodel):
     size n. Hence every time when the class tf_models.NSVD  selects a batch
     of m users it feeds to the tensorflow graph a matrix of shape=[m,n]. 
     Another option is to select a batch of m users take the avarege size
-    of the arrays of rated items and then either slice the arrays of biger
+    of the arrays of rated items and then either slice the arrays of bigger
     size or fill the arrays with smaller size with random items that are
     not rated by the user. Felipe (17/01/17). 
 
