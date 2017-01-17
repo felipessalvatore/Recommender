@@ -6,7 +6,7 @@ This project is my first attempt to create a recommendation system using tensorf
 
 The main difference is that the NSDV do not have a vector representation for each user u. Instead, this model start with two different vector representation for each item (q and x). Using one of the vector representation, say x, the model can derive the vector for the user u as:
 
-![equation](Recommender/recommender/images/Tex2Img_1484683506.jpg)
+![alt text](Recommender/recommender/images/Tex2Img_1484683506.jpg)
 
 where R(u) is the set of all items rated by the user u.
 
