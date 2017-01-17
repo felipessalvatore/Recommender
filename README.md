@@ -6,7 +6,7 @@ This project is my first attempt to create a recommendation system using tensorf
 
 The main difference is that the NSDV do not have a vector representation for each user u. Instead, this model start with two different vector representation for each item (q and x). Using one of the vector representation, say x, the model can derive the vector for the user u as:
 
-![equation](http://www.sciweavers.org/tex2img.php?eq=p_u%20%3D%20%5Cfrac%7B%5Csum_%7Bj%20%5Cin%20R%28u%29%7Dx_%7Bj%7D%7D%7B%20%5Csqrt%7B%7CR%28u%29%7C%7D%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0[/img])
+![equation](<img src="http://www.sciweavers.org/tex2img.php?eq=p_u%20%3D%20%5Cfrac%7B%5Csum_%7Bj%20%5Cin%20R%28u%29%7Dx_%7Bj%7D%7D%7B%20%5Csqrt%7B%7CR%28u%29%7C%7D%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0" align="center" border="0" alt="p_u = \frac{\sum_{j \in R(u)}x_{j}}{ \sqrt{|R(u)|}}" width="122" height="54" />)
 
 
 
