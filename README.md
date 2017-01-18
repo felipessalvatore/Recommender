@@ -4,11 +4,7 @@ This project is my first attempt to create a recommendation system using tensorf
 
 ![equation1](http://www.sciweavers.org/tex2img.php?eq=min_%7Bp_%7B%2A%7D%2Cq_%7B%2A%7D%2Cb_%7B%2A%7D%7D%20%5Csum_%7B%28u%2Ci%29%20%5Cin%20K%7D%28r_%7Bui%7D%20-%5Cmu%20-b_%7Bu%7D%20-b_%7Bi%7D%20-p_%7Bu%7D%5E%7BT%7Dq_%7Bi%7D%29%5E%7B2%7D%20%2B%20%5Clambda_%7B3%7D%28%7C%7Cp_%7Bu%7D%7C%7C%5E%7B2%7D%20%2B%20%7C%7Cq_%7Bi%7D%7C%7C%5E%7B2%7D%20%2B%20b_%7Bu%7D%5E%7B2%7D%20%2B%20b_%7Bi%7D%5E%7B2%7D%29&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0[/img])
 
-The main difference is that the NSDV do not have a vector representation for each user u. Instead, this model start with two different vector representation for each item (q and x). Using one of the vector representation, say x, the model can derive the vector for the user u as:
-
-![](Recommender/recommender/images/Tex2Img_1484683506.jpg)
-
-where R(u) is the set of all items rated by the user u.
+The main difference is that the NSDV model do not have a vector representation for each user u. Instead, this model start with two different vector representation for each item  and uses one representation to derive a user vector.
 
 ### Requirements
 * Tensorflow 
