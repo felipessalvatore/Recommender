@@ -162,7 +162,7 @@ class TestOptimization(unittest.TestCase):
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
-        model = re.NSVDmodel(df,'user', 'item','rating')
+        model = re.SVDmodel(df,'user', 'item','rating','nsvd')
 
         dimension = 10
         regularizer_constant = 0.05

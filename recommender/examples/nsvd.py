@@ -33,7 +33,7 @@ else:
 
 
 df = dfFunctions.load_dataframe(args.path)
-model = re.NSVDmodel(df,'user', 'item','rating')
+model = re.SVDmodel(df,'user', 'item','rating','nsvd')
 
 dimension = args.dimension
 regularizer_constant = args.reg

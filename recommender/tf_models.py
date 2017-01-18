@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from utils import rmse,status_printer
+from utils import rmse, status_printer
 import time
 import os
 
@@ -291,6 +291,27 @@ class NSVD(object):
     data information from the class recommender.NSVDmodel and sets the
     tensorflow graph, it also run the graph in a Session for training
     and for prediction.
+
+    In implementing the NSVD model I run in the following problem.
+    The user factor vector should be represented by
+    np.sum(R(u),1)*(1/np.sqrt(len(R(u)))) where R(u) is the array of all items
+    rated by u. But it turns out that I found major difficulties in creating
+    tensors in tensorflow that have as elements arrays with different sizes.
+
+    In this dataset the number of rated items per user is very different: some
+    is around 1000 others around 20. And in each minibatch of users I could not
+    only pass theses arrays with their raw shapes (since they
+    have different sizes).So I decided to normalize all the arrays
+    of rated items. The method set_item_dic of the class ItemFinder,
+    creates a dictionary of users and rated items, find the smallest
+    size of an array of rated items, say n; and after that slice all
+    the arrays in order to have them with size n. Hence every time
+    when the class tf_models.NSVD  selects a batch of m users it feeds
+    to the tensorflow graph a matrix of shape=[m,n]. Another option is
+    to select a batch of m users take the avarege size of the arrays of rated
+    items and then either slice the arrays of bigger size or fill the arrays
+    with smaller size with random items that are
+    not rated by the user. Felipe (17/01/17).
 
     :type num_of_users: int
     :type num_of_items: int

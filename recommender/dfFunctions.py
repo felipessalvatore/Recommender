@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 
-def load_dataframe(path,sep="::"):
+
+def load_dataframe(path, sep="::"):
     """
     Given one filepath path and one separator sep,
     it returns one dataframe with columns user (int),
@@ -14,32 +15,25 @@ def load_dataframe(path,sep="::"):
     :rtype: dataframe
     """
     if path[-3:] == 'dat':
-        col_names = ["raw_user", "raw_item", "raw_rating", "st"]
-        raw_df = pd.read_csv(path, sep=sep,names=col_names,engine='python')
-        raw_df['raw_user'] = raw_df['raw_user'] -1
-        raw_df['raw_item'] = raw_df['raw_item'] -1
-        raw_df['user'] = raw_df["raw_user"].astype(np.int32)
-        raw_df['item'] = raw_df["raw_item"].astype(np.int32)
-        raw_df["rating"] = raw_df["raw_rating"].astype(np.float32)
-        df = raw_df[["user", "item", "rating"]]
-        return df
+        col_names = ["userId", "movieId", "rating", "st"]
+        raw_df = pd.read_csv(path, sep=sep, names=col_names, engine='python')
     elif path[-3:] == 'csv':
         raw_df = pd.read_csv(path)
-        raw_df['userId'] = raw_df['userId'] -1
-        raw_df['movieId'] = raw_df['movieId'] -1
-        raw_df['user'] = raw_df["userId"].astype(np.int32)
-        raw_df['item'] = raw_df["movieId"].astype(np.int32)
-        raw_df["rating"] = raw_df["rating"].astype(np.float32)
-        df = raw_df[["user", "item", "rating"]]
-        return df
+    raw_df['userId'] = raw_df['userId'] - 1
+    raw_df['movieId'] = raw_df['movieId'] - 1
+    raw_df['user'] = raw_df["userId"].astype(np.int32)
+    raw_df['item'] = raw_df["movieId"].astype(np.int32)
+    raw_df["rating"] = raw_df["rating"].astype(np.float32)
+    df = raw_df[["user", "item", "rating"]]
+    return df
 
 
-def count_intersection(df1,df2,df3):
+def count_intersection(df1, df2, df3):
     """
     Given three dataframes df1,df2 and df3, this function
     counts how many shared observations these dataframes have.
-    We work with three dataframes because the intended use for 
-    this function is to deal with the train, test and valid 
+    We work with three dataframes because the intended use for
+    this function is to deal with the train, test and valid
     dataframes.
 
     This function returns a dictionary with the keys '1-2',
@@ -70,12 +64,13 @@ def count_intersection(df1,df2,df3):
     dic['1-2'] = len(set1.intersection(set2))
     dic['1-3'] = len(set1.intersection(set3))
     dic['2-3'] = len(set2.intersection(set3))
-    return dic 
+    return dic
 
 
 class ItemFinder(object):
     """
-    Class that given one user it returns the array of all items rated by that user
+    Class that given one user it returns
+    the array of all items rated by that user.
 
     :type df: dataframe
     :type users: string
@@ -83,25 +78,26 @@ class ItemFinder(object):
     :type ratings: string
     """
 
-    def __init__(self,df,users,items,ratings):
+    def __init__(self, df, users, items, ratings):
         self.users = users
         self.items = items
         self.df = df
         self.dic = {}
+        self._set_item_dic()
 
-    def get_item(self,user):
+    def get_item(self, user):
         """
         Every time we call this method it returns
         the array of items rated by the user
 
-        :type user: int 
+        :type user: int
         :rtype: numpy array
         """
-        user_df = self.df[self.df[self.users]==user]
+        user_df = self.df[self.df[self.users] == user]
         user_items = np.array(user_df[self.items])
         return user_items
 
-    def set_item_dic(self):
+    def _set_item_dic(self):
         """
         This method returns a dic: user:array_of_rated_items.
         The size of array_of_rated_items is the size of
@@ -113,8 +109,8 @@ class ItemFinder(object):
             all_users = self.df[self.users].unique()
             sizes = []
             for user in all_users:
-                items_rated = self.get_item(user) 
-                self.dic[user]= items_rated
+                items_rated = self.get_item(user)
+                self.dic[user] = items_rated
                 sizes.append(len(items_rated))
             self.min_size = min(sizes)
             self.size_factor = 1/(np.sqrt(self.min_size))
@@ -122,19 +118,19 @@ class ItemFinder(object):
                 self.dic[user] = self.dic[user][0:self.min_size]
         else:
             pass
-    
-    def get_item_array(self,users):
+
+    def get_item_array(self, users):
         """
         Given the list user =[u1, ..., un]
         this method returns the array [r1, ..., rn]
         where ri is the array_of_rated_items by the user
         ui according the dictionary self.dic.
 
-        :type users: numpy array,dtype=int 
+        :type users: numpy array,dtype=int
         :rtype: numpy array,dtype=int
         """
 
-        return np.array([self.dic[user] for user in users])   
+        return np.array([self.dic[user] for user in users])
 
 
 class BatchGenerator(object):
@@ -152,7 +148,7 @@ class BatchGenerator(object):
     :type ratings: string
     """
 
-    def __init__(self,df,batch_size,users,items,ratings):
+    def __init__(self, df, batch_size, users, items, ratings):
         self.batch_size = batch_size
         self.users = np.array(df[users])
         self.items = np.array(df[items])
@@ -169,7 +165,7 @@ class BatchGenerator(object):
 
         :rtype: triple of numpy arrays
         """
-        random_indices = np.random.randint(0,self.size,self.batch_size)
+        random_indices = np.random.randint(0, self.size, self.batch_size)
         users = self.users[random_indices]
         items = self.items[random_indices]
         ratings = self.ratings[random_indices]
