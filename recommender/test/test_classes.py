@@ -13,8 +13,8 @@ import recommender as re
 from utils import rmse
 
 
-def run_test(testClass,header):
-    """ 
+def run_test(testClass, header):
+    """  
     Function to run all the tests from a class of tests.
 
     :type testClass: unittest.TesCase
@@ -23,7 +23,6 @@ def run_test(testClass,header):
     print(header)
     suite = unittest.TestLoader().loadTestsFromTestCase(testClass)
     unittest.TextTestRunner(verbosity=2).run(suite)
-
 
 
 class TestBasic(unittest.TestCase):
@@ -36,11 +35,11 @@ class TestBasic(unittest.TestCase):
         with arrays of different sizes and if it behaves
         normally.
         """
-        array1 = np.array([1,1,1,1])
-        array2 = np.array([1,1,1,1,2])
-        array3 = np.array([2,2,2,2])
+        array1 = np.array([1, 1, 1, 1])
+        array2 = np.array([1, 1, 1, 1, 2])
+        array3 = np.array([2, 2, 2, 2])
         self.assertRaises(AssertionError, rmse, array1, array2)
-        self.assertTrue(rmse(array3,array1) == 1)
+        self.assertTrue(rmse(array3, array1) == 1)
 
 
 class TestdfManipulation(unittest.TestCase):
@@ -62,7 +61,6 @@ class TestdfManipulation(unittest.TestCase):
         self.assertTrue(type(df10) == pd.core.frame.DataFrame)
         self.assertTrue(type(df20) == pd.core.frame.DataFrame)
 
-
     def test_batch(self):
         """
         Test to check if the batchgenerator class is creating
@@ -71,21 +69,24 @@ class TestdfManipulation(unittest.TestCase):
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
         batch_size = 100
-        generator = dfFunctions.BatchGenerator(df,batch_size,'user', 'item','rating')
+        generator = dfFunctions.BatchGenerator(df,
+                                               batch_size,
+                                               'user',
+                                               'item',
+                                               'rating')
         old_observation = None
         count = 0
         num_of_tests = 200
         for i in range(num_of_tests):
             batch = generator.get_batch()
-            current_observation = (batch[0][0],batch[1][0],batch[2][0])
+            current_observation = (batch[0][0], batch[1][0], batch[2][0])
             if current_observation == old_observation:
-                count+=1
+                count += 1
             old_observation = current_observation
             self.assertTrue(len(batch[0]) == batch_size)
             self.assertTrue(len(batch[1]) == batch_size)
             self.assertTrue(len(batch[2]) == batch_size)
         self.assertTrue(count < num_of_tests)
-
 
     def test_dataframe_separation(self):
         """
@@ -95,19 +96,23 @@ class TestdfManipulation(unittest.TestCase):
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
-        model = re.SVDmodel(df,'user', 'item','rating')
+        model = re.SVDmodel(df, 'user', 'item', 'rating')
         sum_of_sizes = len(model.train) + len(model.test) + len(model.valid)
         proportion_train = len(model.train)/len(df)
         proportion_test = len(model.test)/len(df)
         proportion_valid = len(model.valid)/len(df)
-        right_proportions = np.array([0.8,0.1,0.1])
-        proportions = np.array([proportion_train,proportion_test,proportion_valid])
-        error = rmse(proportions,right_proportions)
-        self.assertTrue(len(df) == sum_of_sizes)
-        self.assertTrue(error < 0.1, \
-                            "\n The right proportions are (train,test,valid) = {0}, but the model is separating the dataframe with the proportions {1}"\
-                            .format(right_proportions,proportions))
+        right_proportions = np.array([0.8, 0.1, 0.1])
+        proportions = np.array([proportion_train,
+                                proportion_test,
+                                proportion_valid])
 
+        error = rmse(proportions, right_proportions)
+        self.assertTrue(len(df) == sum_of_sizes)
+        self.assertTrue(error < 0.1,
+                        """\n The right proportions are (train,test,valid) =
+                        {0}, but the model is separating the dataframe with the
+                        proportions {1}"""
+                        .format(right_proportions, proportions))
 
     def test_dataframe_intersection(self):
         """
@@ -116,15 +121,22 @@ class TestdfManipulation(unittest.TestCase):
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
-        model = re.SVDmodel(df,'user', 'item','rating')
-        dic_intersection = dfFunctions.count_intersection(model.train,model.test,model.valid)
-        self.assertTrue(dic_intersection['1-2'] == 0, \
-            "\n The intersection between the train and test dataframe is {0}".format(dic_intersection['1-2']))
-        self.assertTrue(dic_intersection['1-3'] == 0, \
-            "\n The intersection between the train and valid dataframe is {0}".format(dic_intersection['1-3']))
-        self.assertTrue(dic_intersection['2-3'] == 0, \
-            "\n The intersection between the test and valid dataframe is {0}".format(dic_intersection['2-3']))
-
+        model = re.SVDmodel(df, 'user', 'item', 'rating')
+        dic_intersection = dfFunctions.count_intersection(model.train,
+                                                          model.test,
+                                                          model.valid)
+        self.assertTrue(dic_intersection['1-2'] == 0,
+                        """\n The intersection between
+            the train and test dataframe
+            is {0}""".format(dic_intersection['1-2']))
+        self.assertTrue(dic_intersection['1-3'] == 0,
+                        """\n The intersection between
+            the train and valid dataframe
+            is {0}""".format(dic_intersection['1-3']))
+        self.assertTrue(dic_intersection['2-3'] == 0,
+                        """\n The intersection between
+            the test and valid dataframe
+            is {0}""".format(dic_intersection['2-3']))
 
 
 class TestOptimization(unittest.TestCase):
@@ -138,7 +150,7 @@ class TestOptimization(unittest.TestCase):
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
-        model = re.SVDmodel(df,'user', 'item','rating')
+        model = re.SVDmodel(df, 'user', 'item', 'rating')
 
         dimension = 15
         regularizer_constant = 0.05
@@ -147,13 +159,20 @@ class TestOptimization(unittest.TestCase):
         batch_size = 1000
         num_steps = 5000
 
-
         print("\n")
-        model.training(dimension,regularizer_constant,learning_rate,momentum_factor,batch_size,num_steps)
+        model.training(dimension,
+                       regularizer_constant,
+                       learning_rate,
+                       momentum_factor,
+                       batch_size,
+                       num_steps)
+
         prediction = model.valid_prediction()
-        self.assertTrue(prediction <=1.0, \
-                            "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
-                            .format(num_steps,prediction))
+        self.assertTrue(prediction <= 1.0,
+                        """\n with num_steps = {0} \n, the mean square error
+                        of the valid dataset should be
+                        less than 1 and not {1}"""
+                        .format(num_steps, prediction))
 
     def test_upperboundNSVD(self):
         """
@@ -162,7 +181,7 @@ class TestOptimization(unittest.TestCase):
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
-        model = re.SVDmodel(df,'user', 'item','rating','nsvd')
+        model = re.SVDmodel(df, 'user', 'item', 'rating', 'nsvd')
 
         dimension = 10
         regularizer_constant = 0.05
@@ -171,12 +190,17 @@ class TestOptimization(unittest.TestCase):
         batch_size = 1000
         num_steps = 5000
 
-
         print("\n")
-        model.training(dimension,regularizer_constant,learning_rate,momentum_factor,batch_size,num_steps)
+        model.training(dimension,
+                       regularizer_constant,
+                       learning_rate,
+                       momentum_factor,
+                       batch_size,
+                       num_steps)
+
         prediction = model.valid_prediction()
-        self.assertTrue(prediction <=1.0, \
-                            "\n with num_steps = {0} \n, the mean square error of the valid dataset should be less than 1 and not {1}"\
-                            .format(num_steps,prediction))
-
-
+        self.assertTrue(prediction <= 1.0,
+                        """\n with num_steps = {0} \n, the mean square
+                        error of the valid dataset should be less
+                        than 1 and not {1}"""
+                        .format(num_steps, prediction))

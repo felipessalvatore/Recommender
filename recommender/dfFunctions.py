@@ -54,12 +54,12 @@ def count_intersection(df1, df2, df3):
     array1 = raw_array1.copy(order='C')
     array2 = raw_array2.copy(order='C')
     array3 = raw_array3.copy(order='C')
-    set1 = set([sha1(observation).hexdigest()\
-     for observation in array1])
-    set2 = set([sha1(observation).hexdigest()\
-     for observation in array2])
-    set3 = set([sha1(observation).hexdigest()\
-     for observation in array3])
+    set1 = set([sha1(observation).hexdigest()
+                for observation in array1])
+    set2 = set([sha1(observation).hexdigest()
+               for observation in array2])
+    set3 = set([sha1(observation).hexdigest()
+               for observation in array3])
     dic = {}
     dic['1-2'] = len(set1.intersection(set2))
     dic['1-3'] = len(set1.intersection(set3))
