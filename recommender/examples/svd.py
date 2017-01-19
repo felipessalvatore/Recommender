@@ -66,16 +66,16 @@ parser.add_argument("-m",
 
 parser.add_argument("-M",
                     "--model",
-                    type=srt,
+                    type=str,
                     default='svd',
                     help="models: either svd or nsvd (default=svd)")
 
 args = parser.parse_args()
 
 if args.example == '20':
-    path = getcwd() + '/movielens/ml-20m/ratings.csv'
+    path = parent_path + '/movielens/ml-20m/ratings.csv'
 elif args.example == '10':
-    path = getcwd() + '/movielens/ml-10m/ratings.dat'
+    path = parent_path + '/movielens/ml-10m/ratings.dat'
 elif args.example == '1':
     pass
 else:
@@ -83,7 +83,11 @@ else:
 
 
 df = dfFunctions.load_dataframe(args.path)
-model = re.SVDmodel(df, 'user', 'item', 'rating')
+if args.model == "svd":
+    model = re.SVDmodel(df, 'user', 'item', 'rating')
+else:
+    model = re.SVDmodel(df, 'user', 'item', 'rating', args.model)
+
 
 dimension = args.dimension
 regularizer_constant = args.reg
