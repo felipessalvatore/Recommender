@@ -101,12 +101,13 @@ class SVDmodel(object):
                                                 self.test_batches,
                                                 self.valid_batches)
         else:
-            self.tf_counterpart = tf_models.NSVD(self.num_of_users,
-                                                 self.num_of_items,
-                                                 self.train_batches,
-                                                 self.test_batches,
-                                                 self.valid_batches,
-                                                 self.finder)
+            self.tf_counterpart = tf_models.SVD(self.num_of_users,
+                                                self.num_of_items,
+                                                self.train_batches,
+                                                self.test_batches,
+                                                self.valid_batches,
+                                                self.finder,
+                                                self.model)
 
         self.tf_counterpart.training(hp_dim,
                                      hp_reg,

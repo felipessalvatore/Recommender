@@ -169,12 +169,17 @@ class SVD(object):
                  num_of_items,
                  train_batch_generator,
                  test_batch_generator,
-                 valid_batch_generator):
+                 valid_batch_generator,
+                 finder=None,
+                 model="svd"):
         self.num_of_users = num_of_users
         self.num_of_items = num_of_items
         self.train_batch_generator = train_batch_generator
         self.test_batch_generator = test_batch_generator
         self.valid_batch_generator = valid_batch_generator
+        self.valid_batch_generator = valid_batch_generator
+        self.finder = finder
+        self.model = model
         self.general_duration = 0
         self.num_steps = 0
         self.dimension = None
@@ -216,13 +221,29 @@ class SVD(object):
             self.tf_rate_batch = tf.placeholder(tf.float32,
                                                 shape=[None],
                                                 name="actual_ratings")
+            if self.model == "nsvd":
+                self.tf_user_item = tf.placeholder(tf.int32,
+                                                   shape=[None, None],
+                                                   name="user_item")
+                self.tf_size_factor = tf.placeholder(tf.float32,
+                                                     shape=[],
+                                                     name="size_factor")
 
             # Applying the model
-            tf_svd_model = inference_svd(self.tf_user_batch,
-                                         self.tf_item_batch,
-                                         user_num=self.num_of_users,
-                                         item_num=self.num_of_items,
-                                         dim=hp_dim)
+            if self.model == "nsvd":
+                tf_svd_model = inference_nsvd(self.tf_user_batch,
+                                              self.tf_item_batch,
+                                              self.tf_user_item,
+                                              self.tf_size_factor,
+                                              user_num=self.num_of_users,
+                                              item_num=self.num_of_items,
+                                              dim=hp_dim)
+            else:
+                tf_svd_model = inference_svd(self.tf_user_batch,
+                                             self.tf_item_batch,
+                                             user_num=self.num_of_users,
+                                             item_num=self.num_of_items,
+                                             dim=hp_dim)
             self.infer = tf_svd_model['infer']
             regularizer = tf_svd_model['regularizer']
             global_step = tf.contrib.framework.get_or_create_global_step()
@@ -291,9 +312,18 @@ class SVD(object):
             initial_time = start
             for step in range(num_steps):
                 users, items, rates = self.train_batch_generator.get_batch()
-                f_dict = {self.tf_user_batch: users,
-                          self.tf_item_batch: items,
-                          self.tf_rate_batch: rates}
+                if self.model == "nsvd":
+                    items_per_user = self.finder.get_item_array(users)
+                    size_factor = self.finder.size_factor
+                    f_dict = {self.tf_user_batch: users,
+                              self.tf_item_batch: items,
+                              self.tf_rate_batch: rates,
+                              self.tf_size_factor: size_factor,
+                              self.tf_user_item: items_per_user}
+                else:
+                    f_dict = {self.tf_user_batch: users,
+                              self.tf_item_batch: items,
+                              self.tf_rate_batch: rates}
                 _, pred_batch, cost, train_error = sess.run([self.train_op,
                                                              self.infer,
                                                              self.tf_cost,
@@ -301,9 +331,18 @@ class SVD(object):
                                                             feed_dict=f_dict)
                 if (step % 1000) == 0:
                     users, items, rates = self.test_batch_generator.get_batch()
-                    f_dict = {self.tf_user_batch: users,
-                              self.tf_item_batch: items,
-                              self.tf_rate_batch: rates}
+                    if self.model == "nsvd":
+                        items_per_user = self.finder.get_item_array(users)
+                        size_factor = self.finder.size_factor
+                        f_dict = {self.tf_user_batch: users,
+                                  self.tf_item_batch: items,
+                                  self.tf_rate_batch: rates,
+                                  self.tf_size_factor: size_factor,
+                                  self.tf_user_item: items_per_user}
+                    else:
+                        f_dict = {self.tf_user_batch: users,
+                                  self.tf_item_batch: items,
+                                  self.tf_rate_batch: rates}
                     pred_batch = sess.run(self.infer, feed_dict=f_dict)
                     test_error = rmse(pred_batch, rates)
                     if test_error < self.best_acc_test:
@@ -330,7 +369,7 @@ class SVD(object):
         status_printer(self.num_steps, self.general_duration)
 
     def prediction(self,
-                   list_of_users=None,
+                   users_list=None,
                    list_of_items=None,
                    show_valid=False):
         """
@@ -342,7 +381,7 @@ class SVD(object):
         and the other is a list of items) and this function will return
         what is the predicted score (as a np array of floats).
 
-        :type list_of_users: numpy array of ints
+        :type users_list: numpy array of ints
         :type list_of_items: numpy array of ints
         :type show_valid: boolean
         :rtype valid_error: float
@@ -359,14 +398,31 @@ class SVD(object):
                 self.saver.restore(sess=sess, save_path=self.save_path)
                 users, items, rates = self.valid_batch_generator.get_batch()
                 if show_valid:
-                    f_dict = {self.tf_user_batch: users,
-                              self.tf_item_batch: items,
-                              self.tf_rate_batch: rates}
+                    if self.model == "nsvd":
+                        items_per_user = self.finder.get_item_array(users)
+                        size_factor = self.finder.size_factor
+                        f_dict = {self.tf_user_batch: users,
+                                  self.tf_item_batch: items,
+                                  self.tf_rate_batch: rates,
+                                  self.tf_size_factor: size_factor,
+                                  self.tf_user_item: items_per_user}
+                    else:
+                        f_dict = {self.tf_user_batch: users,
+                                  self.tf_item_batch: items,
+                                  self.tf_rate_batch: rates}
                     valid_error = sess.run(self.acc_op, feed_dict=f_dict)
                     return valid_error
                 else:
-                    f_dict = {self.tf_user_batch: list_of_users,
-                              self.tf_item_batch: list_of_items}
+                    if self.model == "nsvd":
+                        items_per_user = self.finder.get_item_array(users_list)
+                        size_factor = self.finder.size_factor
+                        f_dict = {self.tf_user_batch: users,
+                                  self.tf_item_batch: items,
+                                  self.tf_size_factor: size_factor,
+                                  self.tf_user_item: items_per_user}
+                    else:
+                        f_dict = {self.tf_user_batch: users_list,
+                                  self.tf_item_batch: list_of_items}
                     prediction = sess.run(self.infer, feed_dict=f_dict)
                     return prediction
 
@@ -538,7 +594,7 @@ class NSVD(object):
         """
         status_printer(self.num_steps,self.general_duration)
 
-    def prediction(self,list_of_users=None,list_of_items=None,show_valid=False):
+    def prediction(self,users_list=None,list_of_items=None,show_valid=False):
         """
         Prediction function. Similar as the one from SVD.
 
