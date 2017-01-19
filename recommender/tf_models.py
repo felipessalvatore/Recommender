@@ -7,16 +7,18 @@ import os
 def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
     """
     This function creates one tensor of shape=[dim] for every user
-    and every item. We select the indices for users from the tensor user_batch
-    and select the indices for items from the tensor item_batch. After that we
-    calculate the infered score as the inner product between the user vector and
-    the item vector (we also sum the global bias, the bias from that user and 
-    the bias from that item). infer is the tensor with the result of this
+    and every item. We select the indices for users from the tensor
+    user_batch and select the indices for items from the tensor
+    item_batch. After that we calculate the infered score as the
+    inner product between the user vector and the item vector (we
+    also sum the global bias, the bias from that user and the bias
+    from that item). infer is the tensor with the result of this
     caculation.
 
-    We calculate also a regularizer to use in the loss function. This function
-    returns a dictionary with the tensors infer, regularizer, w_user (tensor with
-    all the user vectors) and w_items (tensor with all the item vectors).
+    We calculate also a regularizer to use in the loss function.
+    This function returns a dictionary with the tensors infer,
+    regularizer, w_user (tensor with all the user vectors) and w_items
+    (tensor with all the item vectors).
 
     :type item_batch: tensor of int32
     :type user_batch: tensor of int32
@@ -30,13 +32,21 @@ def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
         bias_global = tf.get_variable("bias_global", shape=[])
         w_bias_user = tf.get_variable("embd_bias_user", shape=[user_num])
         w_bias_item = tf.get_variable("embd_bias_item", shape=[item_num])
-        bias_user = tf.nn.embedding_lookup(w_bias_user, user_batch, name="bias_user")
-        bias_item = tf.nn.embedding_lookup(w_bias_item, item_batch, name="bias_item")
-        w_user = tf.get_variable("embd_user", shape=[user_num, dim],
-                                 initializer=tf.truncated_normal_initializer(stddev=0.02))
+        bias_user = tf.nn.embedding_lookup(w_bias_user,
+                                           user_batch,
+                                           name="bias_user")
+        bias_item = tf.nn.embedding_lookup(w_bias_item,
+                                           item_batch,
+                                           name="bias_item")
+        initializer1 = tf.truncated_normal_initializer(stddev=0.02)
+        w_user = tf.get_variable("embd_user",
+                                 shape=[user_num, dim],
+                                 initializer=initializer1)
+        # initializer2 = tf.truncated_normal_initializer(stddev=0.02)
         w_item = tf.get_variable("embd_item", shape=[item_num, dim],
-                                 initializer=tf.truncated_normal_initializer(stddev=0.02))
-        embd_user = tf.nn.embedding_lookup(w_user, user_batch, name="embedding_user")
+                                 initializer=initializer1)
+        embd_user = tf.nn.embedding_lookup(w_user,
+                                           user_batch, name="embedding_user")
         embd_item = tf.nn.embedding_lookup(w_item, item_batch, name="embedding_item")
     with tf.name_scope('Prediction_regularizer'):
         infer = tf.reduce_sum(tf.mul(embd_user, embd_item), 1)
