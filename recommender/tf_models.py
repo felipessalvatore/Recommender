@@ -156,13 +156,16 @@ class SVD(object):
     Class specialized in communicating with tensorflow. It receives all
     data information from the class recommender.SVDmodel and sets the
     tensorflow graph, it also run the graph in a Session for training
-    and for prediction.
+    and for prediction. The parameter model chooses if the class will
+    run the svd model or the nsvd model.
 
     :type num_of_users: int
     :type num_of_items: int
     :type train_batch_generator: dfFunctions.BatchGenerator
     :type test_batch_generator: dfFunctions.BatchGenerator
     :type valid_batch_generator: dfFunctions.BatchGenerator
+    :type finder: dfFunctions.ItemFinder
+    :type model: str
     """
     def __init__(self,
                  num_of_users,
@@ -178,8 +181,8 @@ class SVD(object):
         self.test_batch_generator = test_batch_generator
         self.valid_batch_generator = valid_batch_generator
         self.valid_batch_generator = valid_batch_generator
-        self.finder = finder
         self.model = model
+        self.finder = finder
         self.general_duration = 0
         self.num_steps = 0
         self.dimension = None
@@ -424,209 +427,4 @@ class SVD(object):
                         f_dict = {self.tf_user_batch: users_list,
                                   self.tf_item_batch: list_of_items}
                     prediction = sess.run(self.infer, feed_dict=f_dict)
-                    return prediction
-
-
-class NSVD(object):
-    """
-    Class specialized in communicating with tensorflow. It receives all
-    data information from the class recommender.NSVDmodel and sets the
-    tensorflow graph, it also run the graph in a Session for training
-    and for prediction.
-
-    In implementing the NSVD model I run in the following problem.
-    The user factor vector should be represented by
-    np.sum(R(u),1)*(1/np.sqrt(len(R(u)))) where R(u) is the array of all items
-    rated by u. But it turns out that I found major difficulties in creating
-    tensors in tensorflow that have as elements arrays with different sizes.
-
-    In this dataset the number of rated items per user is very different: some
-    is around 1000 others around 20. And in each minibatch of users I could not
-    only pass theses arrays with their raw shapes (since they
-    have different sizes).So I decided to normalize all the arrays
-    of rated items. The method set_item_dic of the class ItemFinder,
-    creates a dictionary of users and rated items, find the smallest
-    size of an array of rated items, say n; and after that slice all
-    the arrays in order to have them with size n. Hence every time
-    when the class tf_models.NSVD  selects a batch of m users it feeds
-    to the tensorflow graph a matrix of shape=[m,n]. Another option is
-    to select a batch of m users take the avarege size of the arrays of rated
-    items and then either slice the arrays of bigger size or fill the arrays
-    with smaller size with random items that are
-    not rated by the user. Felipe (17/01/17).
-
-    :type num_of_users: int
-    :type num_of_items: int
-    :type train_batch_generator: dfFunctions.BatchGenerator
-    :type test_batch_generator: dfFunctions.BatchGenerator
-    :type valid_batch_generator: dfFunctions.BatchGenerator
-    :type finder: dfFunctions.ItemFinder
-    """
-    def __init__(self,
-                 num_of_users,
-                 num_of_items,
-                 train_batch_generator,
-                 test_batch_generator,
-                 valid_batch_generator,
-                 finder):
-        self.num_of_users = num_of_users
-        self.num_of_items = num_of_items
-        self.train_batch_generator = train_batch_generator
-        self.test_batch_generator = test_batch_generator
-        self.valid_batch_generator = valid_batch_generator
-        self.finder = finder
-        self.general_duration = 0
-        self.num_steps = 0
-        self.dimension = None
-        self.regularizer = None
-        self.best_acc_test = float('inf')
-
-    def set_graph(self,hp_dim,hp_reg,learning_rate,momentum_factor):
-        """
-        Method to set the tensorflow graph and store it
-        as self.graph.
-
-        :type hp_dim: int
-        :type hp_reg: float
-        :type learning_rate: float
-        :type momentum_factor: float
-        """
-        self.dimension = hp_dim
-        self.regularizer = hp_reg
-        self.learning_rate = learning_rate
-        self.momentum_factor = momentum_factor
-        self.graph = tf.Graph()
-        with self.graph.as_default():
-
-            # Placeholders
-            self.tf_user_batch = tf.placeholder(tf.int32, shape=[None], name="id_user")
-            self.tf_item_batch = tf.placeholder(tf.int32, shape=[None], name="id_item")
-            self.tf_rate_batch = tf.placeholder(tf.float32, shape=[None],name="actual_ratings")
-            self.tf_user_item = tf.placeholder(tf.int32, shape=[None,None], name="user_item")
-            self.tf_size_factor = tf.placeholder(tf.float32, shape=[], name="size_factor")
-
-            # Applying the model
-            tf_nsvd_model = inference_nsvd(self.tf_user_batch, self.tf_item_batch,self.tf_user_item,self.tf_size_factor, user_num=self.num_of_users, item_num=self.num_of_items, dim=hp_dim)
-            self.infer, regularizer = tf_nsvd_model['infer'], tf_nsvd_model['regularizer'] 
-
-            global_step = tf.contrib.framework.get_or_create_global_step()
-
-            with tf.name_scope('loss'):
-                self.tf_cost = loss_function(self.infer, regularizer,self.tf_rate_batch,reg=hp_reg)
-
-            # Optimizer
-            with tf.name_scope('training'):
-                global_step = tf.contrib.framework.assert_or_get_global_step()
-                assert global_step is not None
-                self.train_op = tf.train.MomentumOptimizer(learning_rate,momentum_factor).minimize(self.tf_cost, global_step=global_step)
-
-            # Saver
-            self.saver = tf.train.Saver()
-            save_dir = 'checkpoints/'
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
-            self.save_path = os.path.join(save_dir, 'best_validation')
-
-            # Minibatch accuracy using rmse
-            with tf.name_scope('accuracy'):
-                self.acc_op =  tf.sqrt(tf.reduce_mean(tf.pow(tf.sub(self.infer,self.tf_rate_batch),2)))
-
-
-    def training(self,hp_dim,hp_reg,learning_rate,momentum_factor,num_steps):
-        """
-        After created the graph this function run it in a Session for
-        training.
-
-
-        :type hp_dim: int
-        :type hp_reg: float
-        :type learning_rate: float
-        :type momentum_factor: float
-        :type num_steps: int
-        """
-        self.set_graph(hp_dim,hp_reg,learning_rate,momentum_factor)
-        self.num_steps = num_steps
-        marker = ''
-
-        with tf.Session(graph=self.graph) as sess:
-            tf.initialize_all_variables().run()
-            print("{} {} {} {}".format("step", "batch_error", "test_error","elapsed_time"))
-            start = time.time()
-            initial_time = start
-            for step in range(num_steps):
-                users, items, rates = self.train_batch_generator.get_batch()
-                items_per_user =self.finder.get_item_array(users)
-                size_factor = self.finder.size_factor
-                feed_dict = {self.tf_user_batch: users,\
-                             self.tf_item_batch: items,\
-                             self.tf_rate_batch: rates,\
-                             self.tf_user_item:items_per_user,\
-                             self.tf_size_factor:size_factor}         
-                _, pred_batch,cost,train_error = sess.run([self.train_op, self.infer, self.tf_cost,self.acc_op], feed_dict=feed_dict)
-                if (step % 1000)  == 0:
-                    users, items, rates = self.test_batch_generator.get_batch() 
-                    items_per_user = self.finder.get_item_array(users)
-                    size_factor = self.finder.size_factor
-                    feed_dict = {self.tf_user_batch: users,\
-                             self.tf_item_batch: items,\
-                             self.tf_rate_batch: rates,\
-                             self.tf_user_item:items_per_user,\
-                             self.tf_size_factor:size_factor}     
-                    pred_batch = sess.run(self.infer, feed_dict=feed_dict)
-                    test_error = rmse(pred_batch,rates)
-                    if test_error < self.best_acc_test:
-                        self.best_acc_test = test_error
-                        marker = "*"
-                        self.saver.save(sess=sess, save_path=self.save_path)
-
-                    end = time.time()
-                    print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step,train_error,test_error,marker,
-                                                           end - start))
-                    marker = ''
-                    start = end
-        self.general_duration = time.time() - initial_time
-
-    def print_stats(self):
-        """
-        Method that calls the status_printer function.
-        This method can be called before the training, but it will only print
-        that the training lasted 0 seconds.
-        """
-        status_printer(self.num_steps,self.general_duration)
-
-    def prediction(self,users_list=None,list_of_items=None,show_valid=False):
-        """
-        Prediction function. Similar as the one from SVD.
-
-        :type list_of_users: numpy array of ints
-        :type list_of_items: numpy array of ints
-        :type show_valid: boolean
-        :rtype valid_error: float
-        :rtype predicion: numpy array of floats
-        """
-        if self.dimension == None and self.regularizer == None:
-            print("You can not have a prediction without training!!!!")
-        else:
-            self.set_graph(self.dimension,self.regularizer,self.learning_rate,self.momentum_factor)
-            with tf.Session(graph=self.graph) as sess:
-                self.saver.restore(sess=sess, save_path=self.save_path)
-                users, items, rates = self.valid_batch_generator.get_batch()
-                if show_valid:
-                    items_per_user = self.finder.get_item_array(users)
-                    size_factor = self.finder.size_factor
-                    feed_dict = {self.tf_user_batch: users,\
-                             self.tf_item_batch: items,\
-                             self.tf_rate_batch: rates,\
-                             self.tf_user_item:items_per_user,\
-                             self.tf_size_factor:size_factor}   
-                    valid_error = sess.run(self.acc_op, feed_dict=feed_dict)
-                    return valid_error
-                else:
-                    items_per_user = self.finder.get_item_array(list_of_users)
-                    size_factor = self.finder.size_factor
-                    feed_dict = {self.tf_user_batch: list_of_users,\
-                                 self.tf_item_batch: list_of_items,\
-                                 self.tf_user_item:items_per_user,\
-                                 self.tf_size_factor:size_factor}  
-                    prediction = sess.run(self.infer, feed_dict=feed_dict)
                     return prediction
