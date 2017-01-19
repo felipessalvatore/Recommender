@@ -81,16 +81,33 @@ class ItemFinder(object):
     is around 1000 others around 20. And in each minibatch of users I could not
     only pass theses arrays with their raw shapes (since they
     have different sizes).So I decided to normalize all the arrays
-    of rated items. The method set_item_dic of the class ItemFinder,
-    creates a dictionary of users and rated items, find the smallest
-    size of an array of rated items, say n; and after that slice all
-    the arrays in order to have them with size n. Hence every time
-    when the class tf_models.SVD  selects a batch of m users it feeds
-    to the tensorflow graph a matrix of shape=[m,n]. Another option is
-    to select a batch of m users take the avarege size of the arrays of rated
-    items and then either slice the arrays of bigger size or fill the arrays
-    with smaller size with random items that are
-    not rated by the user. Felipe (17/01/17).
+    of rated items. The method set_item_dic, creates a dictionary of
+    users and rated items, find the smallest size of an array of rated items,
+    say n; and after that slice all the arrays in order to have them with size
+    n. Hence every time when the class tf_models.SVD selects a batch of m
+    users it feeds to the tensorflow graph a matrix of shape=[m,n].
+
+    Another option is fill each array of set_item_dic with a number of a fake
+    item like new_item = max(self.df[self.items].unique()) +1 creat a vector
+    in tensorflor with zeros only and them concat it with the items vector.
+    Similar as in the following script:
+
+    import tensorflow as tf
+    import numpy as np
+
+    ids = np.array([1,2,10])
+    zero = tf.constant(np.array([[0,0]]),dtype="float32")
+    initializer = tf.truncated_normal_initializer(mean=3,stddev=0.02)
+    w_item = tf.get_variable("embd_user", shape=[10, 2],
+                             initializer=initializer)
+    w_item = tf.concat(0,[w_item, zero])
+    result = tf.nn.embedding_lookup(w_item, ids)
+    with tf.Session() as sess:
+    tf.initialize_all_variables().run()
+    a = sess.run(result)
+    print(a)
+
+    Felipe (19/01/17).
 
 
     :type df: dataframe
