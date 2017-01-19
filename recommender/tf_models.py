@@ -1,8 +1,8 @@
 import tensorflow as tf
-import numpy as np
 from utils import rmse, status_printer
 import time
 import os
+
 
 def inference_svd(user_batch, item_batch, user_num, item_num, dim=5):
     """

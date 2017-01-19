@@ -3,7 +3,6 @@
 import numpy as np
 import dfFunctions
 import tf_models
-from os import getcwd
 
 
 class SVDmodel(object):
