@@ -139,11 +139,11 @@ class TestdfManipulation(unittest.TestCase):
             is {0}""".format(dic_intersection['2-3']))
 
 
-class TestOptimization(unittest.TestCase):
+class TestSVD(unittest.TestCase):
     """
-    Class with optimization tests.
+    Class with tests for the SVD model.
     """
-    def test_upperboundSVD(self):
+    def test_upperbound(self):
         """
         We run 5000 steps of training and check if the root mean square error
         from the valid dataset is less than 1.0 in the SVD model
@@ -174,7 +174,35 @@ class TestOptimization(unittest.TestCase):
                         less than 1 and not {1}"""
                         .format(num_steps, prediction))
 
-    def test_upperboundNSVD(self):
+
+class TestNSVD(unittest.TestCase):
+    """
+    Class with tests for the NSVD model.
+    """
+    def test_rated_items(self):
+        """
+        Test to check if the method _set_item_dic creates
+        a dic with user:rated_items such that
+        len(rated_items) == max_size.
+        """
+        path = parent_path + '/movielens/ml-1m/ratings.dat'
+        df = dfFunctions.load_dataframe(path)
+        finder = dfFunctions.ItemFinder(df, 'user', 'item', 'rating')
+        all_users = df['user'].unique()
+        count = 0
+        problem_users = []
+        for user in all_users:
+            r_items = finder.dic[user]
+            if len(r_items) == finder.max_size and r_items.dtype == 'int32':
+                count += 1
+            else:
+                problem_users.append(user)
+        self.assertTrue(count == len(all_users),
+                        """\n There are {0} arrays in dic such that
+            len(dic[user]) != max size or with wrong types. And these users are
+            {1}""".format(count, problem_users))
+
+    def test_upperbound(self):
         """
         We run 5000 steps of training and check if the root mean square error
         from the valid dataset is less than 1.0 in the NSVD model

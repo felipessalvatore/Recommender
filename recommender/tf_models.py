@@ -111,9 +111,12 @@ def inference_nsvd(user_batch,
         w_item2 = tf.get_variable(name='w_item2',
                                   shape=[item_num, dim],
                                   initializer=initializer)
+        fake_item = tf.constant(np.zeros(dim), shape=[dim], name='fake')
+        w_item2 = tf.concat(0, [w_item2, fake])
         embd_item1 = tf.nn.embedding_lookup(w_item1, item_batch)
         embd_item2 = tf.nn.embedding_lookup(w_item2, user_item_batch)
-        embd_item2 = tf.mul(tf.reduce_sum(embd_item2, 1), size_factor)
+        embd_item2 = tf.transpose(tf.reduce_sum(embd_item2, 1))
+        embd_item2 = tf.transpose(tf.mul(embd_item2, size_factor))
     with tf.name_scope('Prediction_regularizer'):
         infer = tf.reduce_sum(tf.mul(embd_item1, embd_item2), 1)
         infer = tf.add(infer, bias_global)
@@ -229,7 +232,7 @@ class SVD(object):
                                                    shape=[None, None],
                                                    name="user_item")
                 self.tf_size_factor = tf.placeholder(tf.float32,
-                                                     shape=[],
+                                                     shape=[None],
                                                      name="size_factor")
 
             # Applying the model
@@ -317,7 +320,7 @@ class SVD(object):
                 users, items, rates = self.train_batch_generator.get_batch()
                 if self.model == "nsvd":
                     items_per_user = self.finder.get_item_array(users)
-                    size_factor = self.finder.size_factor
+                    size_factor = self.get_size_factors(users)
                     f_dict = {self.tf_user_batch: users,
                               self.tf_item_batch: items,
                               self.tf_rate_batch: rates,
@@ -336,7 +339,7 @@ class SVD(object):
                     users, items, rates = self.test_batch_generator.get_batch()
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users)
-                        size_factor = self.finder.size_factor
+                        size_factor = self.get_size_factors(users)
                         f_dict = {self.tf_user_batch: users,
                                   self.tf_item_batch: items,
                                   self.tf_rate_batch: rates,
@@ -403,7 +406,7 @@ class SVD(object):
                 if show_valid:
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users)
-                        size_factor = self.finder.size_factor
+                        size_factor = self.get_size_factors(users)
                         f_dict = {self.tf_user_batch: users,
                                   self.tf_item_batch: items,
                                   self.tf_rate_batch: rates,
@@ -418,7 +421,7 @@ class SVD(object):
                 else:
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users_list)
-                        size_factor = self.finder.size_factor
+                        size_factor = self.get_size_factors(users)
                         f_dict = {self.tf_user_batch: users,
                                   self.tf_item_batch: items,
                                   self.tf_size_factor: size_factor,

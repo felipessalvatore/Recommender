@@ -107,6 +107,21 @@ class ItemFinder(object):
     a = sess.run(result)
     print(a)
 
+    example for multiply each vector by an scalar:
+
+    import tensorflow as tf
+    import numpy as np
+
+
+    a1 = tf.constant(np.array([[1,10],[2,3]]),shape=[2,2],dtype="float32")
+    a2 = tf.constant(np.array([-1,2]),shape=[2],dtype="float32")
+    a1 = tf.transpose(a1)
+    result = tf.mul(a1, a2)
+    a1 = tf.transpose(result)
+
+    with tf.Session() as sess:
+        print(sess.run(a1))
+
     Felipe (19/01/17).
 
 
@@ -145,15 +160,27 @@ class ItemFinder(object):
         """
         if not self.dic:
             all_users = self.df[self.users].unique()
-            sizes = []
+            new_item = max(self.df[self.items].unique()) + 1
+            sizes = {}
+            print("\nWriting dic ...")
             for user in all_users:
                 items_rated = self.get_item(user)
                 self.dic[user] = items_rated
-                sizes.append(len(items_rated))
-            self.min_size = min(sizes)
-            self.size_factor = 1/(np.sqrt(self.min_size))
+                sizes[user] = len(items_rated)
+            self.max_size = max(sizes.values())
+            print("Resizing ...")
             for user in all_users:
-                self.dic[user] = self.dic[user][0:self.min_size]
+                difference_of_sizes = self.max_size - sizes[user]
+                if difference_of_sizes > 0:
+                    tail = [new_item for i in range(difference_of_sizes)]
+                    tail = np.array(tail)
+                    result = np.concatenate((self.dic[user], tail), axis=0)
+                    result = result.astype(np.int32)
+                    self.dic[user] = result
+            print("Generating size factors ...")
+            for user in all_users:
+                sizes[user] = 1/np.sqrt(sizes[user])
+            self.size_factor = sizes
         else:
             pass
 
@@ -169,6 +196,19 @@ class ItemFinder(object):
         """
 
         return np.array([self.dic[user] for user in users])
+
+    def get_size_factors(self, users):
+        """
+        Given the list user =[u1, ..., un]
+        this method returns the array [f1, ..., fn]
+        where fi is the size factor of user
+        ui according the dictionary self.size_factor.
+
+        :type users: numpy array,dtype=int
+        :rtype: numpy array,dtype=float
+        """
+
+        return np.array([self.size_factor[user] for user in users])
 
 
 class BatchGenerator(object):
