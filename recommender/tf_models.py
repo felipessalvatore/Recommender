@@ -419,8 +419,8 @@ class SVD(object):
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users_list)
                         size_factor = self.finder.size_factor
-                        f_dict = {self.tf_user_batch: users,
-                                  self.tf_item_batch: items,
+                        f_dict = {self.tf_user_batch: users_list,
+                                  self.tf_item_batch: list_of_items,
                                   self.tf_size_factor: size_factor,
                                   self.tf_user_item: items_per_user}
                     else:
