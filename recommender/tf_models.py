@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from utils import rmse, status_printer
 import time
@@ -111,8 +112,8 @@ def inference_nsvd(user_batch,
         w_item2 = tf.get_variable(name='w_item2',
                                   shape=[item_num, dim],
                                   initializer=initializer)
-        fake_item = tf.constant(np.zeros(dim), shape=[dim], name='fake')
-        w_item2 = tf.concat(0, [w_item2, fake])
+        fake_item = tf.constant(np.zeros(dim), dtype=tf.float32, shape=[dim], name='fake')
+        w_item2 = tf.concat(0, [w_item2, fake_item])
         embd_item1 = tf.nn.embedding_lookup(w_item1, item_batch)
         embd_item2 = tf.nn.embedding_lookup(w_item2, user_item_batch)
         embd_item2 = tf.transpose(tf.reduce_sum(embd_item2, 1))
