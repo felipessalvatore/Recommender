@@ -22,7 +22,13 @@ class SVDmodel(object):
     :type ratings: string
     :type model: string
     """
-    def __init__(self, df, users, items, ratings, model='svd'):
+    def __init__(self,
+                 df,
+                 users,
+                 items,
+                 ratings,
+                 model='svd',
+                 nsvd_size='mean'):
         self.df = df
         self.users = users
         self.items = items
@@ -35,7 +41,7 @@ class SVDmodel(object):
         if model == 'nsvd':
             self.finder = dfFunctions.ItemFinder(df, self.users,
                                                  self.items,
-                                                 self.ratings)
+                                                 self.ratings, nsvd_size)
 
     def data_separation(self):
         """
@@ -60,7 +66,8 @@ class SVDmodel(object):
                  learning_rate,
                  momentum_factor,
                  batch_size,
-                 num_steps):
+                 num_steps,
+                 verbose=True):
         """
         This method creates three batch generators: one for the train df,
         other for the test df, and another for the valid df (this last one will
@@ -76,6 +83,7 @@ class SVDmodel(object):
         :type learning_rate: float
         :type batch_size: int
         :type num_steps: int
+        :type verbose: boolean
         """
         self.train_batches = dfFunctions.BatchGenerator(self.train,
                                                         batch_size,
@@ -113,8 +121,11 @@ class SVDmodel(object):
                                      hp_reg,
                                      learning_rate,
                                      momentum_factor,
-                                     num_steps)
-        self.tf_counterpart.print_stats()
+                                     num_steps,
+                                     verbose)
+        self.duration = round(self.tf_counterpart.general_duration, 2)
+        if verbose:
+            self.tf_counterpart.print_stats()
 
     def valid_prediction(self):
         """

@@ -71,43 +71,6 @@ class ItemFinder(object):
     """
     Class that given one user it returns
     the array of all items rated by that user.
-    In implementing the NSVD model I run in the following problem.
-    The user factor vector should be represented by
-    np.sum(R(u),1)*(1/np.sqrt(len(R(u)))) where R(u) is the array of all items
-    rated by u. But it turns out that I found major difficulties in creating
-    tensors in tensorflow that have as elements arrays with different sizes.
-
-    In this dataset the number of rated items per user is very different: some
-    is around 1000 others around 20. And in each minibatch of users I could not
-    only pass theses arrays with their raw shapes (since they
-    have different sizes).So I decided to normalize all the arrays
-    of rated items. The method set_item_dic, creates a dictionary of
-    users and rated items, find the smallest size of an array of rated items,
-    say n; and after that slice all the arrays in order to have them with size
-    n. Hence every time when the class tf_models.SVD selects a batch of m
-    users it feeds to the tensorflow graph a matrix of shape=[m,n].
-
-    Another option is fill each array of set_item_dic with a number of a fake
-    item like new_item = max(self.df[self.items].unique()) +1 creat a vector
-    in tensorflor with zeros only and them concat it with the items vector.
-    Similar as in the following script:
-
-    import tensorflow as tf
-    import numpy as np
-
-    ids = np.array([1,2,10])
-    zero = tf.constant(np.array([[0,0]]),dtype="float32")
-    initializer = tf.truncated_normal_initializer(mean=3,stddev=0.02)
-    w_item = tf.get_variable("embd_user", shape=[10, 2],
-                             initializer=initializer)
-    w_item = tf.concat(0,[w_item, zero])
-    result = tf.nn.embedding_lookup(w_item, ids)
-    with tf.Session() as sess:
-    tf.initialize_all_variables().run()
-    a = sess.run(result)
-    print(a)
-
-    Felipe (19/01/17).
 
 
     :type df: dataframe
@@ -116,12 +79,12 @@ class ItemFinder(object):
     :type ratings: string
     """
 
-    def __init__(self, df, users, items, ratings):
+    def __init__(self, df, users, items, ratings, nsvd_size):
         self.users = users
         self.items = items
         self.df = df
         self.dic = {}
-        self._set_item_dic()
+        self._set_item_dic(nsvd_size)
 
     def get_item(self, user):
         """
@@ -135,7 +98,7 @@ class ItemFinder(object):
         user_items = np.array(user_df[self.items])
         return user_items
 
-    def _set_item_dic(self):
+    def _set_item_dic(self, size_command="mean"):
         """
         This method returns a dic: user:array_of_rated_items.
         The size of array_of_rated_items is the size of
@@ -145,15 +108,37 @@ class ItemFinder(object):
         """
         if not self.dic:
             all_users = self.df[self.users].unique()
-            sizes = []
+            new_item = max(self.df[self.items].unique()) + 1
+            sizes = {}
+            print("\nWriting dic ...")
             for user in all_users:
                 items_rated = self.get_item(user)
                 self.dic[user] = items_rated
-                sizes.append(len(items_rated))
-            self.min_size = min(sizes)
-            self.size_factor = 1/(np.sqrt(self.min_size))
+                sizes[user] = len(items_rated)
+            if size_command == "max":
+                self.size = np.max(list(sizes.values()))
+            elif size_command == "mean":
+                self.size = int(np.mean(list(sizes.values())))
+            elif size_command == "min":
+                self.size = np.min(list(sizes.values()))
+            print("Resizing ...")
             for user in all_users:
-                self.dic[user] = self.dic[user][0:self.min_size]
+                if self.size <= sizes[user]:
+                    self.dic[user] = self.dic[user][0:self.size]
+                else:
+                    difference_of_sizes = self.size - sizes[user]
+                    tail = [new_item for i in range(difference_of_sizes)]
+                    tail = np.array(tail)
+                    result = np.concatenate((self.dic[user], tail), axis=0)
+                    result = result.astype(np.int32)
+                    self.dic[user] = result
+            print("Generating size factors ...")
+            if size_command == "max":
+                for user in all_users:
+                    sizes[user] = 1/np.sqrt(sizes[user])
+                self.size_factor = sizes
+            else:
+                self.size_factor = dict.fromkeys(sizes, 1/np.sqrt(self.size))
         else:
             pass
 
@@ -169,6 +154,19 @@ class ItemFinder(object):
         """
 
         return np.array([self.dic[user] for user in users])
+
+    def get_size_factors(self, users):
+        """
+        Given the list user =[u1, ..., un]
+        this method returns the array [f1, ..., fn]
+        where fi is the size factor of user
+        ui according the dictionary self.size_factor.
+
+        :type users: numpy array,dtype=int
+        :rtype: numpy array,dtype=float
+        """
+
+        return np.array([self.size_factor[user] for user in users])
 
 
 class BatchGenerator(object):

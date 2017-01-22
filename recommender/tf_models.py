@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from utils import rmse, status_printer
 import time
@@ -111,9 +112,13 @@ def inference_nsvd(user_batch,
         w_item2 = tf.get_variable(name='w_item2',
                                   shape=[item_num, dim],
                                   initializer=initializer)
+        zero = np.zeros(dim)
+        fake_item = tf.constant(np.array([zero]), dtype=tf.float32, shape=[1,dim], name='fake')
+        w_item2 = tf.concat(0, [w_item2, fake_item])
         embd_item1 = tf.nn.embedding_lookup(w_item1, item_batch)
         embd_item2 = tf.nn.embedding_lookup(w_item2, user_item_batch)
-        embd_item2 = tf.mul(tf.reduce_sum(embd_item2, 1), size_factor)
+        embd_item2 = tf.transpose(tf.reduce_sum(embd_item2, 1))
+        embd_item2 = tf.transpose(tf.mul(embd_item2, size_factor))
     with tf.name_scope('Prediction_regularizer'):
         infer = tf.reduce_sum(tf.mul(embd_item1, embd_item2), 1)
         infer = tf.add(infer, bias_global)
@@ -229,7 +234,7 @@ class SVD(object):
                                                    shape=[None, None],
                                                    name="user_item")
                 self.tf_size_factor = tf.placeholder(tf.float32,
-                                                     shape=[],
+                                                     shape=[None],
                                                      name="size_factor")
 
             # Applying the model
@@ -283,7 +288,8 @@ class SVD(object):
                  hp_reg,
                  learning_rate,
                  momentum_factor,
-                 num_steps):
+                 num_steps,
+                 verbose=True):
         """
         After created the graph this function run it in a Session for
         training. We print some information just to keep track of the
@@ -296,6 +302,7 @@ class SVD(object):
         :type learning_rate: float
         :type momentum_factor: float
         :type num_steps: int
+        :type verbose: boolean
         """
         self.set_graph(hp_dim,
                        hp_reg,
@@ -307,17 +314,20 @@ class SVD(object):
 
         with tf.Session(graph=self.graph) as sess:
             tf.initialize_all_variables().run()
-            print("{} {} {} {}".format("step",
-                                       "batch_error",
-                                       "test_error",
-                                       "elapsed_time"))
+            if verbose:
+                print("{} {} {} {}".format("step",
+                                           "batch_error",
+                                           "test_error",
+                                           "elapsed_time"))
+            else:
+                print("\nTraining")
             start = time.time()
             initial_time = start
             for step in range(num_steps):
                 users, items, rates = self.train_batch_generator.get_batch()
                 if self.model == "nsvd":
                     items_per_user = self.finder.get_item_array(users)
-                    size_factor = self.finder.size_factor
+                    size_factor = self.finder.get_size_factors(users)
                     f_dict = {self.tf_user_batch: users,
                               self.tf_item_batch: items,
                               self.tf_rate_batch: rates,
@@ -332,11 +342,16 @@ class SVD(object):
                                                              self.tf_cost,
                                                              self.acc_op],
                                                             feed_dict=f_dict)
+                if not verbose:
+                    percentage = (step/num_steps)*100
+                    if (percentage % 10) == 0:
+                            print(int(percentage), '%', end="...")
+
                 if (step % 1000) == 0:
                     users, items, rates = self.test_batch_generator.get_batch()
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users)
-                        size_factor = self.finder.size_factor
+                        size_factor = self.finder.get_size_factors(users)
                         f_dict = {self.tf_user_batch: users,
                                   self.tf_item_batch: items,
                                   self.tf_rate_batch: rates,
@@ -354,11 +369,13 @@ class SVD(object):
                         self.saver.save(sess=sess, save_path=self.save_path)
 
                     end = time.time()
-                    print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step,
-                                                               train_error,
-                                                               test_error,
-                                                               marker,
-                                                               end - start))
+                    if verbose:
+                        print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step,
+                                                                   train_error,
+                                                                   test_error,
+                                                                   marker,
+                                                                   end -
+                                                                   start))
                     marker = ''
                     start = end
         self.general_duration = time.time() - initial_time
@@ -403,7 +420,7 @@ class SVD(object):
                 if show_valid:
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users)
-                        size_factor = self.finder.size_factor
+                        size_factor = self.finder.get_size_factors(users)
                         f_dict = {self.tf_user_batch: users,
                                   self.tf_item_batch: items,
                                   self.tf_rate_batch: rates,
@@ -418,7 +435,7 @@ class SVD(object):
                 else:
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users_list)
-                        size_factor = self.finder.size_factor
+                        size_factor = self.finder.get_size_factors(users_list)
                         f_dict = {self.tf_user_batch: users_list,
                                   self.tf_item_batch: list_of_items,
                                   self.tf_size_factor: size_factor,
