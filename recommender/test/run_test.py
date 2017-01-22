@@ -23,15 +23,11 @@ elif args.test == 'svd':
 elif args.test == 'nsvd':
     test_classes.run_test(test_classes.TestNSVD,
                           "\nRunning all nsvd tests...\n")
-
-
 elif args.test == 'all':
     test_classes.run_test(test_classes.TestBasic,
                           "\nRunning all basic tests...\n")
     test_classes.run_test(test_classes.TestdfManipulation,
                           "\nRunning all dataframe manipulation tests...\n")
-    test_classes.run_test(test_classes.TestOptimization,
-                          "\nRunning all optimization tests...\n")
     test_classes.run_test(test_classes.TestSVD,
                           "\nRunning all svd tests...\n")
     test_classes.run_test(test_classes.TestNSVD,

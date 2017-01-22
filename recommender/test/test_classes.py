@@ -14,7 +14,7 @@ from utils import rmse
 
 
 def run_test(testClass, header):
-    """  
+    """
     Function to run all the tests from a class of tests.
 
     :type testClass: unittest.TesCase
@@ -152,7 +152,7 @@ class TestSVD(unittest.TestCase):
         df = dfFunctions.load_dataframe(path)
         model = re.SVDmodel(df, 'user', 'item', 'rating')
 
-        dimension = 15
+        dimension = 12
         regularizer_constant = 0.05
         learning_rate = 0.001
         momentum_factor = 0.9
@@ -174,6 +174,43 @@ class TestSVD(unittest.TestCase):
                         less than 1 and not {1}"""
                         .format(num_steps, prediction))
 
+    def test_prediction(self):
+        """
+        We run 5000 steps of training and check if the difference
+        between the prediction mean and the actual mean is less than
+        0.9 in the SVD model
+        """
+        path = parent_path + '/movielens/ml-1m/ratings.dat'
+        df = dfFunctions.load_dataframe(path)
+        model = re.SVDmodel(df, 'user', 'item', 'rating')
+
+        dimension = 12
+        regularizer_constant = 0.05
+        learning_rate = 0.001
+        momentum_factor = 0.9
+        batch_size = 1000
+        num_steps = 5000
+
+        print("\n")
+        model.training(dimension,
+                       regularizer_constant,
+                       learning_rate,
+                       momentum_factor,
+                       batch_size,
+                       num_steps)
+
+        user_example = np.array(model.valid['user'])[0:10]
+        movies_example = np.array(model.valid['item'])[0:10]
+        actual_ratings = np.mean(np.array(model.valid['rating'])[0:10])
+        predicted_ratings = np.mean(model.prediction(user_example,
+                                                     movies_example))
+        difference = np.absolute(actual_ratings - predicted_ratings)
+
+        self.assertTrue(difference <= 0.9,
+                        """\n with num_steps = {0} \n, the difference should be
+                        less than 0.9 and not {1}"""
+                        .format(num_steps, difference))
+
 
 class TestNSVD(unittest.TestCase):
     """
@@ -187,20 +224,20 @@ class TestNSVD(unittest.TestCase):
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
-        finder = dfFunctions.ItemFinder(df, 'user', 'item', 'rating')
+        finder = dfFunctions.ItemFinder(df, 'user', 'item', 'rating', 'mean')
         all_users = df['user'].unique()
         count = 0
         problem_users = []
         for user in all_users:
             r_items = finder.dic[user]
-            if len(r_items) == finder.max_size and r_items.dtype == 'int32':
+            if len(r_items) == finder.size and r_items.dtype == 'int32':
                 count += 1
             else:
                 problem_users.append(user)
         self.assertTrue(count == len(all_users),
                         """\n There are {0} arrays in dic such that
-            len(dic[user]) != max size or with wrong types. And these users are
-            {1}""".format(count, problem_users))
+            len(dic[user]) != finder.size or with wrong types. And these
+            users are {1}""".format(count, problem_users))
 
     def test_upperbound(self):
         """
@@ -209,9 +246,9 @@ class TestNSVD(unittest.TestCase):
         """
         path = parent_path + '/movielens/ml-1m/ratings.dat'
         df = dfFunctions.load_dataframe(path)
-        model = re.SVDmodel(df, 'user', 'item', 'rating', 'nsvd')
+        model = re.SVDmodel(df, 'user', 'item', 'rating', 'nsvd', 'mean')
 
-        dimension = 10
+        dimension = 12
         regularizer_constant = 0.05
         learning_rate = 0.001
         momentum_factor = 0.9
@@ -232,3 +269,40 @@ class TestNSVD(unittest.TestCase):
                         error of the valid dataset should be less
                         than 1 and not {1}"""
                         .format(num_steps, prediction))
+
+    def test_prediction(self):
+        """
+        We run 5000 steps of training and check if the difference
+        between the prediction mean and the actual mean is less than
+        0.9 in the SVD model
+        """
+        path = parent_path + '/movielens/ml-1m/ratings.dat'
+        df = dfFunctions.load_dataframe(path)
+        model = re.SVDmodel(df, 'user', 'item', 'rating', 'nsvd', 'mean')
+
+        dimension = 12
+        regularizer_constant = 0.05
+        learning_rate = 0.001
+        momentum_factor = 0.9
+        batch_size = 1000
+        num_steps = 5000
+
+        print("\n")
+        model.training(dimension,
+                       regularizer_constant,
+                       learning_rate,
+                       momentum_factor,
+                       batch_size,
+                       num_steps)
+
+        user_example = np.array(model.valid['user'])[0:10]
+        movies_example = np.array(model.valid['item'])[0:10]
+        actual_ratings = np.mean(np.array(model.valid['rating'])[0:10])
+        predicted_ratings = np.mean(model.prediction(user_example,
+                                                     movies_example))
+        difference = np.absolute(actual_ratings - predicted_ratings)
+
+        self.assertTrue(difference <= 0.9,
+                        """\n with num_steps = {0} \n, the difference should be
+                        less than 0.9 and not {1}"""
+                        .format(num_steps, difference))

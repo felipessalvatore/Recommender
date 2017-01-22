@@ -64,11 +64,26 @@ parser.add_argument("-m",
                     default=0.9,
                     help="momentum factor (default=0.9)")
 
+parser.add_argument("-i",
+                    "--info",
+                    type=str,
+                    default='True',
+                    help="""Training information.
+                    Only True or False (default=True)""")
+
 parser.add_argument("-M",
                     "--model",
                     type=str,
                     default='svd',
                     help="models: either svd or nsvd (default=svd)")
+
+parser.add_argument("-S",
+                    "--nsvd_size",
+                    type=str,
+                    default='mean',
+                    help="""size of the vectors of the nsvd model:
+                    either max, mean or min (default=mean)""")
+
 
 args = parser.parse_args()
 
@@ -86,8 +101,12 @@ df = dfFunctions.load_dataframe(args.path)
 if args.model == "svd":
     model = re.SVDmodel(df, 'user', 'item', 'rating')
 else:
-    model = re.SVDmodel(df, 'user', 'item', 'rating', args.model)
-
+    model = re.SVDmodel(df,
+                        'user',
+                        'item',
+                        'rating',
+                        args.model,
+                        args.nsvd_size)
 
 dimension = args.dimension
 regularizer_constant = args.reg
@@ -95,13 +114,18 @@ learning_rate = args.learning
 batch_size = args.batch
 num_steps = args.steps
 momentum_factor = args.momentum
+if args.info == 'True':
+    info = True
+else:
+    info = False
 
 model.training(dimension,
                regularizer_constant,
                learning_rate,
                momentum_factor,
                batch_size,
-               num_steps)
+               num_steps,
+               info)
 
 prediction = model.valid_prediction()
 print("\nThe mean square error of the whole valid dataset is ", prediction)

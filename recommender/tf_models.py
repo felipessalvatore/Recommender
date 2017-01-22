@@ -288,7 +288,8 @@ class SVD(object):
                  hp_reg,
                  learning_rate,
                  momentum_factor,
-                 num_steps):
+                 num_steps,
+                 verbose=True):
         """
         After created the graph this function run it in a Session for
         training. We print some information just to keep track of the
@@ -301,6 +302,7 @@ class SVD(object):
         :type learning_rate: float
         :type momentum_factor: float
         :type num_steps: int
+        :type verbose: boolean
         """
         self.set_graph(hp_dim,
                        hp_reg,
@@ -312,10 +314,13 @@ class SVD(object):
 
         with tf.Session(graph=self.graph) as sess:
             tf.initialize_all_variables().run()
-            print("{} {} {} {}".format("step",
-                                       "batch_error",
-                                       "test_error",
-                                       "elapsed_time"))
+            if verbose:
+                print("{} {} {} {}".format("step",
+                                           "batch_error",
+                                           "test_error",
+                                           "elapsed_time"))
+            else:
+                print("\nTraining")
             start = time.time()
             initial_time = start
             for step in range(num_steps):
@@ -337,7 +342,12 @@ class SVD(object):
                                                              self.tf_cost,
                                                              self.acc_op],
                                                             feed_dict=f_dict)
-                if (step % 2) == 0:
+                if not verbose:
+                    percentage = (step/num_steps)*100
+                    if (percentage % 10) == 0:
+                            print(int(percentage), '%', end="...")
+
+                if (step % 1000) == 0:
                     users, items, rates = self.test_batch_generator.get_batch()
                     if self.model == "nsvd":
                         items_per_user = self.finder.get_item_array(users)
@@ -359,11 +369,13 @@ class SVD(object):
                         self.saver.save(sess=sess, save_path=self.save_path)
 
                     end = time.time()
-                    print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step,
-                                                               train_error,
-                                                               test_error,
-                                                               marker,
-                                                               end - start))
+                    if verbose:
+                        print("{:3d} {:f} {:f}{:s} {:f}(s)".format(step,
+                                                                   train_error,
+                                                                   test_error,
+                                                                   marker,
+                                                                   end -
+                                                                   start))
                     marker = ''
                     start = end
         self.general_duration = time.time() - initial_time
