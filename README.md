@@ -26,17 +26,17 @@ optional arguments:
                         movielens dataset examples (only 1, 10 or 20)
                         (default=1)
   -b BATCH, --batch BATCH
-                        batch size (default=1000)
+                        batch size (default=700)
   -s STEPS, --steps STEPS
-                        number of training steps (default=3000)
+                        number of training steps (default=7000)
   -d DIMENSION, --dimension DIMENSION
-                        embedding vector size (default=15)
+                        embedding vector size (default=12)
   -r REG, --reg REG     regularizer constant for the loss function
-                        (default=0.05)
+                        (default=0.0003)
   -l LEARNING, --learning LEARNING
                         learning rate (default=0.001)
   -m MOMENTUM, --momentum MOMENTUM
-                        momentum factor (default=0.9)
+                        momentum factor (default=0.926)
   -i INFO, --info INFO  Training information. Only True or False
                         (default=True)
   -M MODEL, --model MODEL
@@ -44,6 +44,7 @@ optional arguments:
   -S NSVD_SIZE, --nsvd_size NSVD_SIZE
                         size of the vectors of the nsvd model: either max,
                         mean or min (default=mean)
+
 
 
 ```
