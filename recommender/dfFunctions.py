@@ -77,6 +77,7 @@ class ItemFinder(object):
     :type users: string
     :type items: string
     :type ratings: string
+    :type nsvd_size: string
     """
 
     def __init__(self, df, users, items, ratings, nsvd_size):
@@ -101,9 +102,18 @@ class ItemFinder(object):
     def _set_item_dic(self, size_command="mean"):
         """
         This method returns a dic: user:array_of_rated_items.
-        The size of array_of_rated_items is the size of
-        the smallest number of rated items from an user.
+        The size of array_of_rated_items is determined by size_command.
+        If size_command==´min´ the size of array_of_rated_items will be
+        the smallest number of rated items from an user. Similarly if
+        size_command==´max´ the size of array_of_rated_items will be
+        the biggest number of rated items from an user. And if
+        size_command==´mean´ the size of array_of_rated_items will be
+        the mean of the array of rated items by all users. I decided to
+        do this because I was having difficulties in passing an dynamic
+        array to tensorflow (an array of arrays with different sizes).
+        Felipe 23/01/17.
 
+        :rtype size_command: str
         :rtype items_per_users: dic
         """
         if not self.dic:

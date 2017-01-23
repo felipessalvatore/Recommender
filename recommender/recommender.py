@@ -21,6 +21,7 @@ class SVDmodel(object):
     :type items: string
     :type ratings: string
     :type model: string
+    :type nsvd_size: string
     """
     def __init__(self,
                  df,
@@ -75,7 +76,8 @@ class SVDmodel(object):
         one object tf_models.SVD (a kind of counterpart of the object SVDmodel
         that works with tensorflow) and request one training to tf_models.SVD.
         The object tf_models.SVD is save as self.tf_counterpart for the
-        prediction.
+        prediction. To print all training information you can set verbose=True,
+        otherwise use verbose=False.
 
         :type hp_dim: int
         :type hp_reg: float

@@ -89,7 +89,7 @@ def inference_nsvd(user_batch,
     :type item_batch: tensor of int32
     :type user_batch: tensor of int32
     :type user_item_batch: tensor of int32,
-    shape=[batch size,dfFunctions.ItemFinder.min_size]
+    shape=[batch size,dfFunctions.ItemFinder.size]
     :type user_num: int
     :type item_num: int
     :type dim: int
@@ -405,7 +405,7 @@ class SVD(object):
         :type list_of_items: numpy array of ints
         :type show_valid: boolean
         :rtype valid_error: float
-        :rtype predicion: numpy array of floats
+        :rtype prediction: numpy array of floats
         """
         if self.dimension is None and self.regularizer is None:
             print("You can not have a prediction without training!!!!")
