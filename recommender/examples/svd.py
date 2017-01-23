@@ -30,27 +30,27 @@ parser.add_argument("-e",
 parser.add_argument("-b",
                     "--batch",
                     type=int,
-                    default=1000,
-                    help="batch size (default=1000)")
+                    default=700,
+                    help="batch size (default=700)")
 
 parser.add_argument("-s",
                     "--steps",
                     type=int,
-                    default=3000,
-                    help="number of training steps (default=3000)")
+                    default=7000,
+                    help="number of training steps (default=7000)")
 
 parser.add_argument("-d",
                     "--dimension",
                     type=int,
-                    default=15,
-                    help="embedding vector size (default=15)")
+                    default=12,
+                    help="embedding vector size (default=12)")
 
 parser.add_argument("-r",
                     "--reg",
                     type=float,
-                    default=0.05,
+                    default=0.0003,
                     help="""regularizer constant for
-                    the loss function  (default=0.05)""")
+                    the loss function  (default=0.0003)""")
 
 parser.add_argument("-l",
                     "--learning",
@@ -61,8 +61,8 @@ parser.add_argument("-l",
 parser.add_argument("-m",
                     "--momentum",
                     type=float,
-                    default=0.9,
-                    help="momentum factor (default=0.9)")
+                    default=0.926,
+                    help="momentum factor (default=0.926)")
 
 parser.add_argument("-i",
                     "--info",
