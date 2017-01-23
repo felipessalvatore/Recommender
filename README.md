@@ -15,8 +15,9 @@ The main difference is that the NSDV model do not have a vector representation f
 
 ```
 $ python3 svd.py --help
-usage: svd.py [-h] [-p PATH] [-e EXAMPLE] [-b BATCH] [-s STEPS]
-                      [-d DIMENSION] [-r REG] [-l LEARNING] [-m MOMENTUM]
+usage: svd.py [-h] [-p PATH] [-e EXAMPLE] [-b BATCH] [-s STEPS] [-d DIMENSION]
+              [-r REG] [-l LEARNING] [-m MOMENTUM] [-i INFO] [-M MODEL]
+              [-S NSVD_SIZE]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -36,6 +37,14 @@ optional arguments:
                         learning rate (default=0.001)
   -m MOMENTUM, --momentum MOMENTUM
                         momentum factor (default=0.9)
+  -i INFO, --info INFO  Training information. Only True or False
+                        (default=True)
+  -M MODEL, --model MODEL
+                        models: either svd or nsvd (default=svd)
+  -S NSVD_SIZE, --nsvd_size NSVD_SIZE
+                        size of the vectors of the nsvd model: either max,
+                        mean or min (default=mean)
+
 
 ```
 
