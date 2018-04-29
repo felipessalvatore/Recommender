@@ -7,7 +7,7 @@ import sys
 parent_path = path.abspath('..')
 sys.path.insert(0, parent_path)
 import dfFunctions
-import recommender as re
+import recommender as recomm
 
 path = parent_path + '/movielens/ml-1m/ratings.dat'
 
@@ -99,14 +99,14 @@ else:
 
 df = dfFunctions.load_dataframe(args.path)
 if args.model == "svd":
-    model = re.SVDmodel(df, 'user', 'item', 'rating')
+    model = recomm.SVDmodel(df, 'user', 'item', 'rating')
 else:
-    model = re.SVDmodel(df,
-                        'user',
-                        'item',
-                        'rating',
-                        args.model,
-                        args.nsvd_size)
+    model = recomm.SVDmodel(df,
+                            'user',
+                            'item',
+                            'rating',
+                            args.model,
+                            args.nsvd_size)
 
 dimension = args.dimension
 regularizer_constant = args.reg
